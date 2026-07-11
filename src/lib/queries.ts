@@ -80,6 +80,45 @@ export function useExamLevels(courseId: string | undefined) {
 }
 
 // =============================================================================
+// Dashboard / Stats
+// =============================================================================
+
+export function useMonthlyPayments() {
+  const now = new Date();
+  const monthStart = formatDateISO(new Date(now.getFullYear(), now.getMonth(), 1));
+  const monthEnd = formatDateISO(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  return useQuery({
+    queryKey: ["payments", "monthly", monthStart],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("paid_at, amount_cents, classes_paid")
+        .gte("paid_at", monthStart)
+        .lte("paid_at", monthEnd + "T23:59:59Z")
+        .order("paid_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export function useMonthlyAttendance() {
+  const now = new Date();
+  const monthStart = formatDateISO(new Date(now.getFullYear(), now.getMonth(), 1));
+  return useQuery({
+    queryKey: ["attendance", "monthly", monthStart],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("result")
+        .gte("marked_at", monthStart);
+      if (error) throw error;
+      return (data ?? []) as { result: string }[];
+    },
+  });
+}
+
+// =============================================================================
 // Scheduled Classes (today)
 // =============================================================================
 

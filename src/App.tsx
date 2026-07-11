@@ -9,11 +9,12 @@ import StudentDetailPage from "@/pages/StudentDetailPage";
 import CoursesPage from "@/pages/CoursesPage";
 import ExportPage from "@/pages/ExportPage";
 import PaymentsPage from "@/pages/PaymentsPage";
+import StatsPage from "@/pages/StatsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
-import { CalendarDays, Users, GraduationCap, CreditCard, Download, LogOut } from "lucide-react";
+import { BarChart3, CalendarDays, Users, GraduationCap, CreditCard, Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type Page = "home" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding";
+type Page = "home" | "stats" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding";
 
 function Layout() {
   const [page, setPage] = useState<Page>("home");
@@ -32,6 +33,7 @@ function Layout() {
           </div>
         </div>
         <nav className="flex-1 py-2">
+          <NavItem icon={<BarChart3 className="w-4 h-4" />} label="数据看板" active={page === "stats"} onClick={() => { setPage("stats"); setSelectedStudentId(null); }} />
           <NavItem icon={<CalendarDays className="w-4 h-4" />} label="今日课程" active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />
           <NavItem icon={<Users className="w-4 h-4" />} label="学生管理" active={page === "students" || page === "student_detail"} onClick={() => { setPage("students"); setSelectedStudentId(null); }} />
           <NavItem icon={<GraduationCap className="w-4 h-4" />} label="课程管理" active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
@@ -48,6 +50,7 @@ function Layout() {
 
       {/* Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
+        {page === "stats" && <StatsPage />}
         {page === "home" && <HomePage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />}
         {page === "students" && (
           <StudentsPage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />
