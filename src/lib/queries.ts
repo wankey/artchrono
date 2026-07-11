@@ -99,3 +99,26 @@ export function useEnrollments(studentId: string | undefined) {
     enabled: !!studentId,
   });
 }
+
+// =============================================================================
+// Class Slots (per enrollment or per student)
+// =============================================================================
+
+export function useClassSlots(enrollmentId: string | undefined) {
+  return useQuery({
+    queryKey: ["class_slots", enrollmentId],
+    queryFn: async () => {
+      if (!enrollmentId) return [];
+      const { data, error } = await supabase
+        .from("class_slots")
+        .select("*")
+        .eq("enrollment_id", enrollmentId)
+        .eq("active", true)
+        .order("weekday")
+        .order("start_time");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!enrollmentId,
+  });
+}

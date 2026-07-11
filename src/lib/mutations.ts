@@ -111,3 +111,103 @@ export function useCreateExamLevel() {
     onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["exam_levels", vars.course_id] }),
   });
 }
+
+// =============================================================================
+// Enrollments
+// =============================================================================
+
+export function useCreateEnrollment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      student_id: string;
+      course_id: string;
+      exam_level_id: string;
+      classes_paid: number;       // 初始付款节数（>= 0）
+      amount_cents: number;       // 初始付款金额（>= 0）
+      payment_method?: string;
+    }) {
+      const teacherId = await getTeacherId();
+      // 调用 RPC record_payment（这样 initial payment + enrollment create + regeneration 全在一个事务里）
+      // V1 简化：先建 enrollment，再可选调 record_payment
+      // 1. 创建 enrollment
+      const { data: enrollment, error: enrollErr } = await supabase
+        .from("enrollments")
+        .insert({
+          teacher_id: teacherId,
+          student_id: input.student_id,
+          course_id: input.course_id,
+          exam_level_id: input.exam_level_id,
+          classes_remaining: 0,
+          price_paid_cents: 0,
+        })
+        .select()
+        .single();
+      if (enrollErr) throw enrollErr;
+
+      // 2. 如果有初始付款 → 调用 record_payment RPC
+      if (input.classes_paid > 0 || input.amount_cents > 0) {
+        const clientOpId = crypto.randomUUID();
+        const { error: rpcErr } = await supabase.rpc("record_payment", {
+          p_client_op_id: clientOpId,
+          p_enrollment_id: enrollment.id,
+          p_classes_paid: input.classes_paid,
+          p_amount_cents: input.amount_cents,
+          p_payment_method: input.payment_method || "cash",
+        });
+        if (rpcErr) throw rpcErr;
+      }
+
+      return enrollment;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["enrollments"] });
+      qc.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+}
+
+// =============================================================================
+// Class Slots
+// =============================================================================
+
+export function useCreateClassSlot() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      student_id: string;
+      enrollment_id: string;
+      weekday: number;       // 0=周日, 6=周六
+      start_time: string;   // "09:00"
+      end_time: string;     // "10:00"
+      location?: string;
+      notes?: string;
+    }) {
+      const teacherId = await getTeacherId();
+      const { data, error } = await supabase
+        .from("class_slots")
+        .insert({
+          teacher_id: teacherId,
+          student_id: input.student_id,
+          enrollment_id: input.enrollment_id,
+          weekday: input.weekday,
+          start_time: input.start_time,
+          end_time: input.end_time,
+          location: input.location || null,
+          notes: input.notes || null,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      // 有课位后立即触发 regeneration
+      // V1：先不调 RPC（等 weekly cron 兜底）
+      // V1.1：改为此处调 regenerate_for_enrollment RPC
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["class_slots"] });
+      qc.invalidateQueries({ queryKey: ["enrollments"] });
+    },
+  });
+}

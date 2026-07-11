@@ -5,7 +5,7 @@ import { useStudents } from "@/lib/queries";
 import { useCreateStudent } from "@/lib/mutations";
 import { Search, Plus, Loader2 } from "lucide-react";
 
-export default function StudentsPage() {
+export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (id: string) => void }) {
   const { data: students, isLoading, error } = useStudents();
   const createStudent = useCreateStudent();
 
@@ -120,7 +120,8 @@ export default function StudentsPage() {
           </div>
         ) : (
           filtered.map((s) => (
-            <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer">
+            <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer"
+                 onClick={() => onSelectStudent?.(s.id)}>
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-semibold text-gray-900">{s.name}</h4>

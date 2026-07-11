@@ -1,17 +1,19 @@
-// App 根组件 — V1 带侧边导航
+// App 根组件 — V1 带侧边导航 + 学生详情页
 
 import { useState } from "react";
 import { AuthProvider, useAuth } from "@/pages/Login";
 import LoginPage from "@/pages/LoginPage";
 import HomePage from "@/pages/HomePage";
 import StudentsPage from "@/pages/StudentsPage";
+import StudentDetailPage from "@/pages/StudentDetailPage";
 import CoursesPage from "@/pages/CoursesPage";
 import { CalendarDays, Users, GraduationCap, LogOut } from "lucide-react";
 
-type Page = "home" | "students" | "courses";
+type Page = "home" | "students" | "student_detail" | "courses";
 
 function Layout() {
   const [page, setPage] = useState<Page>("home");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { state, signOut } = useAuth();
   const user = state.status === "authenticated" ? state.user : null;
 
@@ -23,9 +25,9 @@ function Layout() {
           <h1 className="text-lg font-bold">课程管家</h1>
         </div>
         <nav className="flex-1 py-2">
-          <NavItem icon={<CalendarDays className="w-4 h-4" />} label="今日课程" active={page === "home"} onClick={() => setPage("home")} />
-          <NavItem icon={<Users className="w-4 h-4" />} label="学生管理" active={page === "students"} onClick={() => setPage("students")} />
-          <NavItem icon={<GraduationCap className="w-4 h-4" />} label="课程管理" active={page === "courses"} onClick={() => setPage("courses")} />
+          <NavItem icon={<CalendarDays className="w-4 h-4" />} label="今日课程" active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />
+          <NavItem icon={<Users className="w-4 h-4" />} label="学生管理" active={page === "students" || page === "student_detail"} onClick={() => { setPage("students"); setSelectedStudentId(null); }} />
+          <NavItem icon={<GraduationCap className="w-4 h-4" />} label="课程管理" active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700 flex items-center justify-between">
           <span className="text-xs text-gray-400 truncate">{user?.email}</span>
@@ -38,7 +40,12 @@ function Layout() {
       {/* Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         {page === "home" && <HomePage />}
-        {page === "students" && <StudentsPage />}
+        {page === "students" && (
+          <StudentsPage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />
+        )}
+        {page === "student_detail" && selectedStudentId && (
+          <StudentDetailPage studentId={selectedStudentId} onBack={() => { setPage("students"); setSelectedStudentId(null); }} />
+        )}
         {page === "courses" && <CoursesPage />}
       </main>
     </div>
