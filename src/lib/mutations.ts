@@ -126,7 +126,7 @@ export function useCreateEnrollment() {
       classes_paid: number;       // 初始付款节数（>= 0）
       amount_cents: number;       // 初始付款金额（>= 0）
       payment_method?: string;
-    }) {
+    }) => {
       const teacherId = await getTeacherId();
       // 调用 RPC record_payment（这样 initial payment + enrollment create + regeneration 全在一个事务里）
       // V1 简化：先建 enrollment，再可选调 record_payment
@@ -182,7 +182,7 @@ export function useCreateClassSlot() {
       end_time: string;     // "10:00"
       location?: string;
       notes?: string;
-    }) {
+    }) => {
       const teacherId = await getTeacherId();
       const { data, error } = await supabase
         .from("class_slots")

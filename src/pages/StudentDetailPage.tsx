@@ -1,6 +1,6 @@
 // 学生详情页 + Enrollment / Class Slot 管理
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots } from "@/lib/queries";
 import { useCreateEnrollment, useCreateClassSlot } from "@/lib/mutations";
 import { ArrowLeft, Plus, Loader2 } from "lucide-react";
@@ -111,17 +111,33 @@ function AddEnrollmentForm({ studentId, onDone }: { studentId: string; onDone: (
 
   const selectedLevel = levels?.find(l => l.id === levelId);
 
+  // 等级或节数变化时自动更新付款金额
+  useEffect(() => {
+    if (selectedLevel) {
+      setAmountYuan(((selectedLevel.price_cents * classesPaid) / 100).toFixed(0));
+    }
+  }, [levelId, classesPaid]);
+
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async () => {
     if (!courseId || !levelId) return;
-    await createEnrollment.mutateAsync({
-      student_id: studentId,
-      course_id: courseId,
-      exam_level_id: levelId,
-      classes_paid: classesPaid,
-      amount_cents: Math.round(parseFloat(amountYuan) * 100),
-      payment_method: "cash",
-    });
-    onDone();
+    setError(null);
+    try {
+      await createEnrollment.mutateAsync({
+        student_id: studentId,
+        course_id: courseId,
+        exam_level_id: levelId,
+        classes_paid: classesPaid,
+        amount_cents: Math.round(parseFloat(amountYuan) * 100),
+        payment_method: "cash",
+      });
+      onDone();
+    } catch (e: any) {
+      const msg = e?.message || e?.error_description || String(e);
+      setError(msg);
+      console.error("[Enrollment] create failed:", msg);
+    }
   };
 
   return (
@@ -150,11 +166,7 @@ function AddEnrollmentForm({ studentId, onDone }: { studentId: string; onDone: (
           <input type="text" className="w-full px-2 py-1.5 border rounded text-sm" value={amountYuan} onChange={(e) => setAmountYuan(e.target.value)} />
         </div>
       </div>
-      {selectedLevel && (
-        <p className="text-xs text-gray-500">
-          单节课费 ¥{(selectedLevel.price_cents / 100).toFixed(0)}，{classesPaid} 节 ≈ ¥{(selectedLevel.price_cents * classesPaid / 100).toFixed(0)}
-        </p>
-      )}
+      {error && <div className="text-red-600 text-sm bg-red-50 px-3 py-1 rounded">{error}</div>}
       <div className="flex gap-2">
         <button onClick={handleSubmit} disabled={createEnrollment.isPending || !courseId || !levelId}
           className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
