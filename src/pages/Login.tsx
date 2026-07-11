@@ -1,12 +1,9 @@
-// Auth context + login/logout/session 管理
-//
-// 单用户自用：只支持邮箱+密码登录
-// session 持久化到 tauri-plugin-store
+// Auth context — 直接用 Supabase 内置 persistSession（localStorage）
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { saveSession, loadSession, clearSession } from "@/lib/session";
+import { ensureUser } from "@/lib/session";
 
 type AuthState =
   | { status: "loading" }
@@ -25,21 +22,13 @@ const AuthCtx = createContext<AuthContext | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
 
-  // 应用启动：尝试恢复 session
+  // 应用启动：Supabase 自动从 localStorage 恢复 session
   useEffect(() => {
     (async () => {
-      const saved = await loadSession();
-      if (saved) {
-        // 把 session 设回 supabase 客户端
-        await supabase.auth.setSession({
-          access_token: saved.access_token,
-          refresh_token: saved.refresh_token,
-        });
-        setState({
-          status: "authenticated",
-          session: saved,
-          user: saved.user,
-        });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setState({ status: "authenticated", session, user: session.user });
+        await ensureUser(session.user.id, session.user.email);
       } else {
         setState({ status: "anonymous" });
       }
@@ -47,56 +36,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log("[Auth] signIn start");
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    console.log("[Auth] signIn result:", { error: error?.message, hasSession: !!data.session });
     if (error) return { error: error.message };
     if (data.session) {
-      try {
-        await saveSession(data.session);
-      } catch (e) {
-        console.warn("[Auth] saveSession failed (non-fatal):", e);
-      }
-      setState({
-        status: "authenticated",
-        session: data.session,
-        user: data.user!,
-      });
+      setState({ status: "authenticated", session: data.session, user: data.session.user });
+      await ensureUser(data.session.user.id, data.session.user.email);
     }
     return { error: null };
   };
 
   const signUp = async (email: string, password: string) => {
-    console.log("[Auth] signUp start, URL:", import.meta.env.VITE_SUPABASE_URL?.slice(0, 30) + "...");
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: undefined,
-      },
-    });
-    console.log("[Auth] signUp result:", { error: error?.message, hasSession: !!data.session, hasUser: !!data.user });
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: undefined } });
     if (error) return { error: error.message };
     if (data.session) {
-      await saveSession(data.session);
-      setState({
-        status: "authenticated",
-        session: data.session,
-        user: data.user!,
-      });
-    } else if (data.user && data.user.identities?.length === 0) {
-      // 邮箱已存在：提示去登录
-      return { error: "邮箱已存在，请直接登录" };
-    } else if (!data.session) {
-      // Confirm email 还没关 — 需要去邮箱验证
-      return { error: "注册成功但需邮箱验证。去 Supabase Dashboard → Authentication → Providers → Email → 关闭 Confirm email" };
+      setState({ status: "authenticated", session: data.session, user: data.session.user });
+      await ensureUser(data.session.user.id, data.session.user.email);
+    } else if (data.user && !data.session) {
+      return { error: "注册成功但需邮箱验证。去 Supabase Dashboard → Auth → 关闭 Confirm email" };
     }
     return { error: null };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    await clearSession();
     setState({ status: "anonymous" });
   };
 
