@@ -1,11 +1,11 @@
-// 学生详情 — Enrollment + Class Slot + 升级
+// 学生详情 — Enrollment + Class Slot + 升级 + 付款
 
 import { useState, useEffect } from "react";
 import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots } from "@/lib/queries";
 import { useCreateEnrollment, useCreateClassSlot } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, CreditCard } from "lucide-react";
 
 const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
@@ -56,6 +56,7 @@ function InfoTab({ student }: any) {
 function EnrollmentsTab({ student }: { student: any }) {
   const { data: enrollments } = useEnrollments(student.id);
   const [showAdd, setShowAdd] = useState(false);
+  const [showPayFor, setShowPayFor] = useState<string | null>(null);
   const qc = useQueryClient();
 
   const handleGraduate = async () => {
@@ -76,7 +77,75 @@ function EnrollmentsTab({ student }: { student: any }) {
       </div>
       {showAdd && <AddEnrollmentForm studentId={student.id} onDone={() => setShowAdd(false)} />}
       {enrollments?.length === 0 && !showAdd && <div className="text-center py-8 text-gray-400">还没有报名</div>}
-      {enrollments?.map((enr: any) => <EnrollmentCard key={enr.id} enrollment={enr} studentId={student.id} />)}
+      {enrollments?.map((enr: any) => (
+        <EnrollmentCard
+          key={enr.id}
+          enrollment={enr}
+          studentId={student.id}
+          showPayForm={showPayFor === enr.id}
+          onTogglePay={() => setShowPayFor(showPayFor === enr.id ? null : enr.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// 付款录入（嵌入在报名卡片内）
+function PaymentForm({ enrollment, onDone }: { enrollment: any; onDone: () => void }) {
+  const [classesPaid, setClassesPaid] = useState(10);
+  const [amountYuan, setAmountYuan] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("wechat");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (enrollment.exam_levels?.price_cents) {
+      setAmountYuan(((enrollment.exam_levels.price_cents * classesPaid) / 100).toFixed(0));
+    }
+  }, [classesPaid]);
+
+  const handleSubmit = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const { error: rpcErr } = await supabase.rpc("record_payment", {
+        p_client_op_id: crypto.randomUUID(),
+        p_enrollment_id: enrollment.id,
+        p_classes_paid: classesPaid,
+        p_amount_cents: Math.round(parseFloat(amountYuan) * 100),
+        p_payment_method: paymentMethod,
+      });
+      if (rpcErr) throw rpcErr;
+      qc.invalidateQueries({ queryKey: ["enrollments"] });
+      qc.invalidateQueries({ queryKey: ["today_classes"] });
+      onDone();
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="bg-blue-50 rounded-lg p-3 mb-3 space-y-2">
+      <div className="text-sm font-medium text-blue-900">录入付款</div>
+      <div className="grid grid-cols-4 gap-2">
+        <div><label className="block text-xs text-gray-600 mb-1">节数</label><input type="number" min={1} className="w-full px-2 py-1 border rounded text-sm" value={classesPaid} onChange={e => setClassesPaid(parseInt(e.target.value)||0)} /></div>
+        <div><label className="block text-xs text-gray-600 mb-1">金额（元）</label><input className="w-full px-2 py-1 border rounded text-sm" value={amountYuan} onChange={e => setAmountYuan(e.target.value)} /></div>
+        <div><label className="block text-xs text-gray-600 mb-1">方式</label>
+          <select className="w-full px-2 py-1 border rounded text-sm" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
+            <option value="wechat">微信</option>
+            <option value="alipay">支付宝</option>
+            <option value="cash">现金</option>
+            <option value="bank">银行</option>
+          </select>
+        </div>
+        <div className="flex items-end gap-2">
+          <button onClick={handleSubmit} disabled={loading} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{loading ? "..." : "确认"}</button>
+          <button onClick={onDone} className="text-gray-600 px-3 py-1 rounded text-sm border hover:bg-gray-50">取消</button>
+        </div>
+      </div>
+      {error && <div className="text-red-600 text-xs bg-red-50 px-2 py-1 rounded">{error}</div>}
     </div>
   );
 }
@@ -131,7 +200,7 @@ function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefi
   );
 }
 
-function EnrollmentCard({ enrollment, studentId }: any) {
+function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any) {
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [weekday, setWeekday] = useState(6);
   const [startTime, setStartTime] = useState("09:00");
@@ -203,6 +272,7 @@ function EnrollmentCard({ enrollment, studentId }: any) {
           </div>
         </div>
         <div className="flex gap-2">
+          <button onClick={onTogglePay} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><CreditCard className="w-3.5 h-3.5" />付款</button>
           <button onClick={() => setShowSlotForm(!showSlotForm)} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><Plus className="w-3.5 h-3.5" />排课</button>
           <button onClick={handleEndClick} className="text-sm text-orange-600 hover:underline">结束</button>
           {!isMaxLevel && (
@@ -227,6 +297,14 @@ function EnrollmentCard({ enrollment, studentId }: any) {
             <button onClick={() => setShowEndConfirm(false)} className="text-gray-600 px-4 py-1.5 rounded text-sm border hover:bg-gray-50">取消</button>
           </div>
         </div>
+      )}
+
+      {/* 付款录入（嵌入在报名卡内） */}
+      {showPayForm && (
+        <PaymentForm
+          enrollment={enrollment}
+          onDone={() => onTogglePay()}
+        />
       )}
 
       {/* 升级到下一级 */}

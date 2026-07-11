@@ -7,12 +7,11 @@ import HomePage from "@/pages/HomePage";
 import StudentsPage from "@/pages/StudentsPage";
 import StudentDetailPage from "@/pages/StudentDetailPage";
 import CoursesPage from "@/pages/CoursesPage";
-import PaymentsPage from "@/pages/PaymentsPage";
 import ExportPage from "@/pages/ExportPage";
 import OnboardingPage from "@/pages/OnboardingPage";
-import { CalendarDays, Users, GraduationCap, CreditCard, LogOut } from "lucide-react";
+import { CalendarDays, Users, GraduationCap, LogOut } from "lucide-react";
 
-type Page = "home" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding";
+type Page = "home" | "students" | "student_detail" | "courses" | "export" | "onboarding";
 
 function Layout() {
   const [page, setPage] = useState<Page>("home");
@@ -30,7 +29,6 @@ function Layout() {
         <nav className="flex-1 py-2">
           <NavItem icon={<CalendarDays className="w-4 h-4" />} label="今日课程" active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />
           <NavItem icon={<Users className="w-4 h-4" />} label="学生管理" active={page === "students" || page === "student_detail"} onClick={() => { setPage("students"); setSelectedStudentId(null); }} />
-          <NavItem icon={<CreditCard className="w-4 h-4" />} label="付款录入" active={page === "payments"} onClick={() => { setPage("payments"); setSelectedStudentId(null); }} />
           <NavItem icon={<GraduationCap className="w-4 h-4" />} label="课程管理" active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700 flex items-center justify-between">
@@ -51,7 +49,6 @@ function Layout() {
           <StudentDetailPage studentId={selectedStudentId} onBack={() => { setPage("students"); setSelectedStudentId(null); }} />
         )}
         {page === "courses" && <CoursesPage />}
-        {page === "payments" && <PaymentsPage />}
         {page === "export" && <ExportPage />}
         {page === "onboarding" && <OnboardingPage onComplete={() => setPage("home")} />}
       </main>
