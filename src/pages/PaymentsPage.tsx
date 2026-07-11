@@ -1,9 +1,9 @@
-// 付款录入页 — 续费 / 追加付款
+// 付款录入页 — 续费 / 追加付款 + 付款记录查询
 
 import { useState } from "react";
 import { useStudents, useEnrollments } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function PaymentsPage() {
+  const [mode, setMode] = useState<"record" | "history">("record");
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">付款管理</h2>
+        <div className="flex gap-0 border rounded-lg overflow-hidden">
+          <button onClick={() => setMode("record")}
+            className={`px-4 py-1.5 text-sm font-medium ${mode === "record" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>录入</button>
+          <button onClick={() => setMode("history")}
+            className={`px-4 py-1.5 text-sm font-medium ${mode === "history" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>记录</button>
+        </div>
+      </div>
+      {mode === "record" ? <RecordPayment /> : <PaymentHistory />}
+    </div>
+  );
+}
+
+function RecordPayment() {
   const qc = useQueryClient();
   const { data: students, isLoading: loadingStudents } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -65,9 +83,7 @@ export default function PaymentsPage() {
   if (loadingStudents) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">付款录入</h2>
-
+    <>
       {/* Step 1: 选学生 */}
       {!selectedStudentId ? (
         <>
@@ -161,6 +177,83 @@ export default function PaymentsPage() {
           )}
         </>
       )}
+    </>
+  );
+}
+
+// =============================================================================
+// Payment History — all payments across students
+// =============================================================================
+
+function PaymentHistory() {
+  const { data: payments, isLoading } = useQuery({
+    queryKey: ["payments", "all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("paid_at, classes_paid, amount_cents, payment_method, students!inner(name), enrollments!inner(courses!inner(name), exam_levels!inner(level_number, level_name))")
+        .order("paid_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>;
+
+  const totalAmount = (payments ?? []).reduce((sum: number, p: any) => sum + p.amount_cents, 0);
+  const totalClasses = (payments ?? []).reduce((sum: number, p: any) => sum + p.classes_paid, 0);
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 flex gap-8 text-sm">
+          <div><span className="text-gray-500">总收款：</span><span className="font-semibold text-gray-900">¥{(totalAmount / 100).toFixed(0)}</span></div>
+          <div><span className="text-gray-500">总售课：</span><span className="font-semibold text-gray-900">{totalClasses} 节</span></div>
+          <div><span className="text-gray-500">笔数：</span><span className="font-semibold text-gray-900">{payments?.length ?? 0}</span></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-gray-500 text-xs">
+                <th className="text-left px-4 py-2 font-medium">日期</th>
+                <th className="text-left px-4 py-2 font-medium">学生</th>
+                <th className="text-left px-4 py-2 font-medium">课程</th>
+                <th className="text-right px-4 py-2 font-medium">节数</th>
+                <th className="text-right px-4 py-2 font-medium">金额</th>
+                <th className="text-center px-4 py-2 font-medium">方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(payments ?? []).length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-12 text-gray-400">暂无付款记录</td></tr>
+              ) : (
+                (payments ?? []).map((p: any, i: number) => (
+                  <tr key={p.id ?? i} className="border-b last:border-0 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-600">{new Date(p.paid_at).toLocaleDateString("zh-CN")}</td>
+                    <td className="px-4 py-3 text-gray-900 font-medium">{p.students?.name ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {p.enrollments?.courses?.name ?? "—"}
+                      {p.enrollments?.exam_levels?.level_name
+                        ? ` · ${p.enrollments.exam_levels.level_name}`
+                        : p.enrollments?.exam_levels?.level_number
+                          ? ` · 第${p.enrollments.exam_levels.level_number}级`
+                          : ""}
+                    </td>
+                    <td className="px-4 py-3 text-right font-medium">{p.classes_paid}</td>
+                    <td className="px-4 py-3 text-right font-medium">¥{(p.amount_cents / 100).toFixed(0)}</td>
+                    <td className="px-4 py-3 text-center text-gray-500">
+                      {p.payment_method ? ({ wechat: "微信", alipay: "支付宝", cash: "现金", bank: "银行" } as Record<string, string>)[p.payment_method] ?? p.payment_method : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -32,13 +32,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#E8F4F0" }}>
       <Card className="max-w-md w-full">
         <CardContent className="p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-            艺时纪
-          </h1>
-          <p className="text-gray-500 text-center mb-6 text-sm">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: "#5BB5A2", color: "#1A3C38" }}>艺</div>
+            <h1 className="text-2xl font-bold tracking-wide" style={{ color: "#1A3C38" }}>艺时纪</h1>
+          </div>
+          <p className="text-center text-sm mb-6" style={{ color: "#5BB5A2" }}>
             记录每一刻艺术时光
           </p>
           <p className="text-gray-400 text-center mb-6 text-xs">
@@ -79,7 +80,7 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <Button type="submit" disabled={loading} className="w-full">
+            <Button type="submit" disabled={loading} className="w-full" style={{ backgroundColor: loading ? undefined : "#5BB5A2" }}>
               {loading ? "处理中..." : mode === "signin" ? "登录" : "注册"}
             </Button>
           </form>
