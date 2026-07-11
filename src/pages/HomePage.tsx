@@ -1,45 +1,20 @@
-// 已登录用户的首页（骨架）
-// V1 暂时只是占位，下一步（T6+）填充真实内容
-
-import { useAuth } from "@/pages/Login";
-import { LogOut } from "lucide-react";
+// 今日课程页（V1 骨架，T8 替换成真实内容）
 
 export default function HomePage() {
-  const { state, signOut } = useAuth();
-  const user = state.status === "authenticated" ? state.user : null;
+  const today = new Date().toLocaleDateString("zh-CN", {
+    year: "numeric", month: "long", day: "numeric", weekday: "long",
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">课程管家</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.email}</span>
-            <button
-              onClick={() => signOut()}
-              className="flex items-center gap-1 text-sm text-gray-700 hover:text-red-600"
-              title="登出"
-            >
-              <LogOut className="w-4 h-4" />
-              登出
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">欢迎 🎉</h2>
-          <p className="text-gray-600">
-            T5 (Auth flow) 完成。下一步 T6（学生/课程/考级 CRUD）。
-          </p>
-          <p className="text-sm text-gray-400 mt-4">
-            User ID: {user?.id}
-          </p>
-        </div>
-      </main>
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{today}</h2>
+      <div className="bg-white rounded-lg shadow p-8 text-center mt-4">
+        <div className="text-6xl mb-4">📅</div>
+        <h3 className="text-lg font-semibold text-gray-700 mb-2">今日课程</h3>
+        <p className="text-gray-500">
+          T6 CRUD 完成。T7（Enrollment + Class Slot）实施后会显示真正的课程列表。
+        </p>
+      </div>
     </div>
   );
 }
