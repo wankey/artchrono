@@ -1,8 +1,9 @@
 // App 根组件 — V1 带侧边导航 + 学生详情页
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "@/pages/Login";
 import LoginPage from "@/pages/LoginPage";
+import { supabase } from "@/lib/supabase";
 import HomePage from "@/pages/HomePage";
 import StudentsPage from "@/pages/StudentsPage";
 import StudentDetailPage from "@/pages/StudentDetailPage";
@@ -21,6 +22,23 @@ function Layout() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { state, signOut } = useAuth();
   const user = state.status === "authenticated" ? state.user : null;
+
+  // 启动时兜底 regeneration
+  useEffect(() => {
+    if (state.status !== "authenticated") return;
+    const run = async () => {
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("id")
+        .eq("status", "active");
+      for (const e of enrollments ?? []) {
+        try {
+          await supabase.rpc("regenerate_for_enrollment", { p_enrollment_id: e.id });
+        } catch { /* non-fatal */ }
+      }
+    };
+    run();
+  }, [state.status]);
 
   return (
     <div className="flex min-h-screen">

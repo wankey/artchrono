@@ -1,11 +1,11 @@
 // 学生详情 — Enrollment + Class Slot + 升级 + 付款
 
 import { useState, useEffect } from "react";
-import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots, useStudentPayments, useStudentAttendance } from "@/lib/queries";
-import { useCreateEnrollment, useCreateClassSlot, useUpdateStudent } from "@/lib/mutations";
+import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots, useStudentPayments, useStudentAttendance, useNextClassDate } from "@/lib/queries";
+import { useCreateEnrollment, useCreateClassSlot, useDeleteClassSlot, useUpdateStudent } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Loader2, CreditCard } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, CreditCard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -353,7 +353,7 @@ function PaymentForm({ enrollment, onDone }: { enrollment: any; onDone: () => vo
 }
 
 // 新建报名（含升级下一级预填）
-function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefillLevelNum }: { studentId: string; onDone: () => void; onCancel?: () => void; prefillCourseId?: string; prefillLevelNum?: number }) {
+function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefillLevelNum }: { studentId: string; onDone: (enrollmentId?: string) => void; onCancel?: () => void; prefillCourseId?: string; prefillLevelNum?: number }) {
   const { data: courses } = useCourses();
   const [courseId, setCourseId] = useState(prefillCourseId ?? "");
   const { data: levels } = useExamLevels(courseId || undefined);
@@ -380,8 +380,8 @@ function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefi
     if (!courseId || !levelId) return;
     setError(null);
     try {
-      await createEnrollment.mutateAsync({ student_id: studentId, course_id: courseId, exam_level_id: levelId, classes_paid: classesPaid, amount_cents: Math.round(parseFloat(amountYuan) * 100), payment_method: "cash" });
-      onDone();
+      const result = await createEnrollment.mutateAsync({ student_id: studentId, course_id: courseId, exam_level_id: levelId, classes_paid: classesPaid, amount_cents: Math.round(parseFloat(amountYuan) * 100), payment_method: "cash" });
+      onDone(result.id);
     } catch (e: any) { setError(e?.message || String(e)); }
   };
 
@@ -412,7 +412,9 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
   const [duration, setDuration] = useState(60);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const createSlot = useCreateClassSlot();
+  const deleteSlot = useDeleteClassSlot();
   const { data: slots } = useClassSlots(enrollment.id);
+  const { data: nextClass } = useNextClassDate(enrollment.id);
   const qc = useQueryClient();
 
   // 获取课时长度：等级优先，否则用课程默认
@@ -523,16 +525,11 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
             prefillCourseId={enrollment.course_id}
             prefillLevelNum={nextLevelNum}
             onCancel={() => setShowUpgrade(false)}
-            onDone={async () => {
+            onDone={async (newEnrollmentId) => {
               // 旧报名标 completed + 转移余额
               const oldBalance = enrollment.classes_remaining;
-              if (oldBalance > 0) {
-                // V1 简化：直接把余额加到新 enrollment
-                // 拿到新创建的 enrollment（通过最近时间匹配）
-                const { data: newEnrs } = await supabase.from("enrollments").select("id").eq("student_id", studentId).eq("course_id", enrollment.course_id).eq("status", "active").order("created_at", { ascending: false }).limit(1);
-                if (newEnrs?.[0]) {
-                  await supabase.rpc("record_payment", { p_client_op_id: crypto.randomUUID(), p_enrollment_id: newEnrs[0].id, p_classes_paid: oldBalance, p_amount_cents: 0 });
-                }
+              if (oldBalance > 0 && newEnrollmentId) {
+                await supabase.rpc("record_payment", { p_client_op_id: crypto.randomUUID(), p_enrollment_id: newEnrollmentId, p_classes_paid: oldBalance, p_amount_cents: 0 });
               }
               await handleComplete();
               setShowUpgrade(false);
@@ -557,11 +554,26 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
         </CardContent></Card>
       )}
 
+      {nextClass && (
+        <p className="text-xs text-[#5BB5A2] font-medium mb-2">
+          下一节课：{new Date(nextClass.scheduled_date).toLocaleDateString()} {nextClass.start_time?.slice(0,5)}
+        </p>
+      )}
       {slots?.length === 0 && !showSlotForm && <p className="text-sm text-gray-400">还没有课位，点击"排课"添加</p>}
       {slots?.map((slot: any) => (
-        <div key={slot.id} className="flex items-center justify-between text-sm py-1 border-t">
-          <span className="text-gray-700">📅 {WEEKDAY_LABELS[slot.weekday]} {slot.start_time?.slice(0,5)}-{slot.end_time?.slice(0,5)}</span>
-          <span className="text-gray-400">{slot.location || ""}</span>
+        <div key={slot.id} className="flex items-center justify-between text-sm py-1.5 border-t group">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-700">📅 {WEEKDAY_LABELS[slot.weekday]} {slot.start_time?.slice(0,5)}-{slot.end_time?.slice(0,5)}</span>
+            {slot.location && <span className="text-gray-400 text-xs">📍{slot.location}</span>}
+          </div>
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (!confirm("确认删除这个课位？已完成的出勤记录不受影响。")) return;
+              try { await deleteSlot.mutateAsync(slot.id); } catch (err: any) { alert("删除失败：" + (err?.message ?? String(err))); }
+            }} title="删除课位">
+            <X className="w-3 h-3" />
+          </Button>
         </div>
       ))}
       </CardContent></Card>

@@ -242,6 +242,25 @@ export function useCreateClassSlot() {
       notes?: string;
     }) => {
       const teacherId = await getTeacherId();
+
+      // 冲突检测：同一老师同一星期同一时间段是否已有课位
+      const { data: conflicts } = await supabase
+        .from("class_slots")
+        .select("id, student_id, start_time, end_time")
+        .eq("teacher_id", teacherId)
+        .eq("weekday", input.weekday)
+        .eq("active", true)
+        .lt("start_time", input.end_time)
+        .gt("end_time", input.start_time);
+      if (conflicts && conflicts.length > 0) {
+        const names = await Promise.all(
+          conflicts.map(c =>
+            supabase.from("students").select("name").eq("id", c.student_id).single().then(r => r.data?.name ?? "?")
+          )
+        );
+        throw new Error(`时段冲突：与 ${names.join("、")}（${input.start_time.slice(0,5)}-${input.end_time.slice(0,5)}）重叠`);
+      }
+
       const { data, error } = await supabase
         .from("class_slots")
         .insert({
@@ -270,6 +289,22 @@ export function useCreateClassSlot() {
       qc.invalidateQueries({ queryKey: ["class_slots"] });
       qc.invalidateQueries({ queryKey: ["enrollments"] });
       qc.invalidateQueries({ queryKey: ["today_classes"] });
+    },
+  });
+}
+
+export function useDeleteClassSlot() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // 软删除：标记 inactive
+      const { error } = await supabase.from("class_slots").update({ active: false }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["class_slots"] });
+      qc.invalidateQueries({ queryKey: ["today_classes"] });
+      qc.invalidateQueries({ queryKey: ["week_classes"] });
     },
   });
 }

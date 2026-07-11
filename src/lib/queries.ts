@@ -119,33 +119,44 @@ export function useMonthlyAttendance() {
 }
 
 // =============================================================================
-// Scheduled Classes (today)
+// Scheduled Classes (by date — for day navigation)
 // =============================================================================
 
-export function useTodayClasses() {
-  const today = formatDateISO();
+export function useDayClasses(dateStr: string | undefined) {
   return useQuery({
-    queryKey: ["today_classes", today],
+    queryKey: ["day_classes", dateStr],
     queryFn: async () => {
+      if (!dateStr) return [];
       const { data, error } = await supabase
         .from("scheduled_classes")
         .select("*, students(name), class_slots(location)")
-        .eq("scheduled_date", today)
+        .eq("scheduled_date", dateStr)
         .order("start_time");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
+    enabled: !!dateStr,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 }
 
 // =============================================================================
+// Scheduled Classes (today — kept for backwards compat)
+// =============================================================================
+
+export function useTodayClasses() {
+  const today = formatDateISO();
+  return useDayClasses(today);
+}
+
+// =============================================================================
 // Scheduled Classes (this week, Mon-Sun)
 // =============================================================================
 
-function getWeekBounds() {
+function getWeekBoundsForOffset(weekOffset = 0) {
   const now = new Date();
+  now.setDate(now.getDate() + weekOffset * 7);
   const dayOfWeek = now.getDay(); // 0=Sun
   const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const monday = new Date(now);
@@ -155,8 +166,8 @@ function getWeekBounds() {
   return { monday: formatDateISO(monday), sunday: formatDateISO(sunday) };
 }
 
-export function useWeekClasses() {
-  const { monday, sunday } = getWeekBounds();
+export function useWeekClasses(weekOffset = 0) {
+  const { monday, sunday } = getWeekBoundsForOffset(weekOffset);
   return useQuery({
     queryKey: ["week_classes", monday],
     queryFn: async () => {
@@ -172,6 +183,49 @@ export function useWeekClasses() {
     },
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+  });
+}
+
+// =============================================================================
+// Holidays
+// =============================================================================
+
+export function useHolidays() {
+  return useQuery({
+    queryKey: ["holidays"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("holidays")
+        .select("date, name, type")
+        .order("date");
+      if (error) throw error;
+      return data as Array<{ date: string; name: string; type: string }> ?? [];
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+}
+
+// =============================================================================
+// Next class date per enrollment
+// =============================================================================
+
+export function useNextClassDate(enrollmentId: string | undefined) {
+  return useQuery({
+    queryKey: ["next_class_date", enrollmentId],
+    queryFn: async () => {
+      if (!enrollmentId) return null;
+      const { data, error } = await supabase
+        .from("scheduled_classes")
+        .select("scheduled_date, start_time, end_time")
+        .eq("enrollment_id", enrollmentId)
+        .eq("status", "scheduled")
+        .gte("scheduled_date", formatDateISO())
+        .order("scheduled_date")
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+    enabled: !!enrollmentId,
   });
 }
 
