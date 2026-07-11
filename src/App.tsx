@@ -12,6 +12,7 @@ import ExportPage from "@/pages/ExportPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import StatsPage from "@/pages/StatsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import { LogoIcon } from "@/components/Logo";
 import { BarChart3, CalendarDays, Users, GraduationCap, CreditCard, Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -45,9 +46,9 @@ function Layout() {
       {/* Sidebar */}
       <aside className="w-56 text-gray-100 flex flex-col" style={{ backgroundColor: "#1A3C38" }}>
         <div className="px-4 py-4 border-b border-gray-700/30">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold" style={{ backgroundColor: "#5BB5A2", color: "#1A3C38" }}>艺</div>
-            <h1 className="text-base font-bold tracking-wide">艺时纪</h1>
+          <div className="flex items-center gap-2">
+            <LogoIcon size="sm" />
+            <h1 className="text-base font-bold tracking-wide" style={{ color: "#E8F4F0" }}>艺时纪</h1>
           </div>
         </div>
         <nav className="flex-1 py-2">

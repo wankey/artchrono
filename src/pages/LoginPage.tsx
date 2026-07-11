@@ -5,6 +5,7 @@ import { useState, FormEvent } from "react";
 import { useAuth } from "@/pages/Login";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LogoFull } from "@/components/Logo";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -35,9 +36,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#E8F4F0" }}>
       <Card className="max-w-md w-full">
         <CardContent className="p-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: "#5BB5A2", color: "#1A3C38" }}>艺</div>
-            <h1 className="text-2xl font-bold tracking-wide" style={{ color: "#1A3C38" }}>艺时纪</h1>
+          <div className="flex justify-center mb-4">
+            <LogoFull size="lg" />
           </div>
           <p className="text-center text-sm mb-6" style={{ color: "#5BB5A2" }}>
             记录每一刻艺术时光
