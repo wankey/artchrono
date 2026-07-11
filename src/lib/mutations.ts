@@ -3,6 +3,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
+// 获取当前用户的 teacher_id (= auth.uid())
+async function getTeacherId(): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("未登录");
+  return user.id;
+}
+
 // =============================================================================
 // Students
 // =============================================================================
@@ -11,9 +18,11 @@ export function useCreateStudent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { name: string; parent_name?: string; parent_phone?: string; parent_wechat?: string }) => {
+      const teacherId = await getTeacherId();
       const { data, error } = await supabase
         .from("students")
         .insert({
+          teacher_id: teacherId,
           name: input.name,
           parent_name: input.parent_name || null,
           parent_phone: input.parent_phone || null,
@@ -60,9 +69,11 @@ export function useCreateCourse() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { name: string; description?: string }) => {
+      const teacherId = await getTeacherId();
       const { data, error } = await supabase
         .from("courses")
         .insert({
+          teacher_id: teacherId,
           name: input.name,
           description: input.description || null,
         })
