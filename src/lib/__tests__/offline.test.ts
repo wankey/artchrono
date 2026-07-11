@@ -1,6 +1,6 @@
 // Offline queue unit tests
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { enqueueOp, getPendingOps, removeOp, updateOpStatus } from "@/lib/offline";
 
 // IndexedDB 在 jsdom 中以 fake-indexeddb 模拟

@@ -15,8 +15,6 @@ export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
   const createCourse = useCreateCourse();
   const createLevel = useCreateExamLevel();
-  const deleteCourse = useDeleteCourse();
-  const deleteLevel = useDeleteExamLevel();
   const qc = useQueryClient();
 
   const [showCourseForm, setShowCourseForm] = useState(false);
@@ -83,7 +81,7 @@ export default function CoursesPage() {
             showLevelForm={showLevelFormFor === course.id} onShowLevelForm={() => setShowLevelFormFor(course.id)} onHideLevelForm={() => { setShowLevelFormFor(null); setLevelDuration(undefined); }}
             levelNum={levelNum} setLevelNum={setLevelNum} levelName={levelName} setLevelName={setLevelName}
             priceYuan={priceYuan} setPriceYuan={setPriceYuan} levelDuration={levelDuration} setLevelDuration={setLevelDuration}
-            course={course} onAddLevel={() => handleAddLevel(course.id)} addingLevel={createLevel.isPending}
+            onAddLevel={() => handleAddLevel(course.id)} addingLevel={createLevel.isPending}
             onUpdateDuration={(mins: number) => handleUpdateDuration(course.id, mins)} />
         ))}
       </div>
@@ -93,6 +91,8 @@ export default function CoursesPage() {
 
 function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm, onHideLevelForm, levelNum, setLevelNum, levelName, setLevelName, priceYuan, setPriceYuan, levelDuration, setLevelDuration, onAddLevel, addingLevel, onUpdateDuration }: any) {
   const { data: levels } = useExamLevels(course.id);
+  const deleteCourse = useDeleteCourse();
+  const deleteLevel = useDeleteExamLevel();
   const [editingDuration, setEditingDuration] = useState(false);
   const [dur, setDur] = useState(course.default_duration_minutes ?? 60);
 

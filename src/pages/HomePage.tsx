@@ -52,7 +52,7 @@ export default function HomePage() {
   const replayQueue = async () => {
     const ops = await getPendingOps();
     for (const op of ops) {
-      if (op.status === "completed") continue;
+      if ((op.status as string) === "completed") continue;
       if (op.retry_count >= 5) continue;
       try {
         await updateOpStatus(op.op_id, "in_flight");

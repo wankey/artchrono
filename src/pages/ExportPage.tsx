@@ -1,6 +1,6 @@
 // CSV 导出（学生 + 付款）
 
-import { useStudents, useEnrollments } from "@/lib/queries";
+import { useStudents } from "@/lib/queries";
 import { Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
