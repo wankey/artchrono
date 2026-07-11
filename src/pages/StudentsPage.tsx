@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { useStudents } from "@/lib/queries";
-import { useCreateStudent } from "@/lib/mutations";
+import { useCreateStudent, useDeleteStudent } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Loader2 } from "lucide-react";
+import { Search, Plus, Loader2, Trash2 } from "lucide-react";
 
 export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (id: string) => void }) {
   const { data: students, isLoading, error } = useStudents();
   const createStudent = useCreateStudent();
+  const deleteStudent = useDeleteStudent();
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
@@ -95,7 +96,7 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
           filtered.map((s: any) => {
             const enrollments = (allEnrollments ?? []).filter((e: any) => e.student_id === s.id);
             return (
-              <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer"
+              <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer relative"
                    onClick={() => onSelectStudent?.(s.id)}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -127,6 +128,21 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
                       </div>
                     )}
                   </div>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm(`确认删除学生「${s.name}」？\n（有未来课程会拒绝）`)) return;
+                      try {
+                        await deleteStudent.mutateAsync(s.id);
+                      } catch (err: any) {
+                        alert(`删除失败：${err.message}`);
+                      }
+                    }}
+                    className="ml-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                    title="删除学生"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             );

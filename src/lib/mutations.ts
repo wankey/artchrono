@@ -87,6 +87,21 @@ export function useCreateCourse() {
   });
 }
 
+export function useDeleteCourse() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("courses").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["courses"] });
+      qc.invalidateQueries({ queryKey: ["exam_levels"] });
+      qc.invalidateQueries({ queryKey: ["enrollments"] });
+    },
+  });
+}
+
 // =============================================================================
 // Exam Levels
 // =============================================================================
@@ -111,6 +126,20 @@ export function useCreateExamLevel() {
       return data;
     },
     onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["exam_levels", vars.course_id] }),
+  });
+}
+
+export function useDeleteExamLevel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("exam_levels").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["exam_levels"] });
+      qc.invalidateQueries({ queryKey: ["enrollments"] });
+    },
   });
 }
 
@@ -165,6 +194,32 @@ export function useCreateEnrollment() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["enrollments"] });
       qc.invalidateQueries({ queryKey: ["students"] });
+      qc.invalidateQueries({ queryKey: ["today_classes"] });
+    },
+  });
+}
+
+export function useDeleteStudent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // 检查是否有未来 scheduled_classes
+      const { data: futureClasses } = await supabase
+        .from("scheduled_classes")
+        .select("id")
+        .eq("student_id", id)
+        .gte("scheduled_date", new Date().toISOString().slice(0, 10))
+        .neq("status", "cancelled")
+        .limit(1);
+      if (futureClasses && futureClasses.length > 0) {
+        throw new Error("该学生还有未来课程，请先取消或结课后删除");
+      }
+      const { error } = await supabase.from("students").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["students"] });
+      qc.invalidateQueries({ queryKey: ["enrollments"] });
       qc.invalidateQueries({ queryKey: ["today_classes"] });
     },
   });

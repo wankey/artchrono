@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { useCourses, useExamLevels } from "@/lib/queries";
-import { useCreateCourse, useCreateExamLevel } from "@/lib/mutations";
+import { useCreateCourse, useCreateExamLevel, useDeleteCourse, useDeleteExamLevel } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Loader2, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 
 export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
   const createCourse = useCreateCourse();
   const createLevel = useCreateExamLevel();
+  const deleteCourse = useDeleteCourse();
+  const deleteLevel = useDeleteExamLevel();
   const qc = useQueryClient();
 
   const [showCourseForm, setShowCourseForm] = useState(false);
@@ -93,16 +95,29 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50">
-        <div className="text-left">
-          <h4 className="font-semibold text-gray-900">{course.name}</h4>
-          <p className="text-sm text-gray-500">{course.description || ""}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">{levels?.length ?? 0} 个等级 · {course.default_duration_minutes ?? 60}分钟/课</span>
-          {expanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
-        </div>
-      </button>
+      <div className="flex items-center">
+        <button onClick={onToggle} className="flex-1 flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+          <div className="text-left">
+            <h4 className="font-semibold text-gray-900">{course.name}</h4>
+            <p className="text-sm text-gray-500">{course.description || ""}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">{levels?.length ?? 0} 个等级 · {course.default_duration_minutes ?? 60}分钟/课</span>
+            {expanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+          </div>
+        </button>
+        <button onClick={async (e) => {
+          e.stopPropagation();
+          if (!confirm(`确认删除课程「${course.name}」？\n（有报名会失败）`)) return;
+          try {
+            await deleteCourse.mutateAsync(course.id);
+          } catch (err: any) {
+            alert(`删除失败：${err.message}`);
+          }
+        }} className="mr-3 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded" title="删除课程">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
 
       {expanded && (
         <div className="px-4 pb-4 border-t space-y-2 pt-3">
@@ -123,10 +138,22 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
           {levels?.map((lvl: any) => (
             <div key={lvl.id} className="flex items-center justify-between text-sm py-1">
               <span className="text-gray-700">{lvl.level_name || `第 ${lvl.level_number} 级`}</span>
-              <span className="text-gray-600">
-                ¥{(lvl.price_cents / 100).toFixed(0)} / 节
-                {lvl.default_duration_minutes ? ` · ${lvl.default_duration_minutes}min` : ""}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-600">
+                  ¥{(lvl.price_cents / 100).toFixed(0)} / 节
+                  {lvl.default_duration_minutes ? ` · ${lvl.default_duration_minutes}min` : ""}
+                </span>
+                <button onClick={async () => {
+                  if (!confirm(`删除等级「${lvl.level_name || `第${lvl.level_number}级`}」？`)) return;
+                  try {
+                    await deleteLevel.mutateAsync(lvl.id);
+                  } catch (err: any) {
+                    alert(`删除失败：${err.message}`);
+                  }
+                }} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded" title="删除等级">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           ))}
 
