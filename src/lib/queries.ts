@@ -101,6 +101,42 @@ export function useTodayClasses() {
 }
 
 // =============================================================================
+// Scheduled Classes (this week, Mon-Sun)
+// =============================================================================
+
+function getWeekBounds() {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun
+  const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMon);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = (d: Date) => d.toLocaleDateString("en-CA");
+  return { monday: fmt(monday), sunday: fmt(sunday) };
+}
+
+export function useWeekClasses() {
+  const { monday, sunday } = getWeekBounds();
+  return useQuery({
+    queryKey: ["week_classes", monday],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_classes")
+        .select("*, students(name), class_slots(location)")
+        .gte("scheduled_date", monday)
+        .lte("scheduled_date", sunday)
+        .order("scheduled_date")
+        .order("start_time");
+      if (error) throw error;
+      return data ?? [];
+    },
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+}
+
+// =============================================================================
 // Enrollments (per student)
 // =============================================================================
 
