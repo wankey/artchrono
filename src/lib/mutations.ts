@@ -163,6 +163,7 @@ export function useCreateEnrollment() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["enrollments"] });
       qc.invalidateQueries({ queryKey: ["students"] });
+      qc.invalidateQueries({ queryKey: ["today_classes"] });
     },
   });
 }
@@ -211,6 +212,7 @@ export function useCreateClassSlot() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["class_slots"] });
       qc.invalidateQueries({ queryKey: ["enrollments"] });
+      qc.invalidateQueries({ queryKey: ["today_classes"] });
     },
   });
 }
