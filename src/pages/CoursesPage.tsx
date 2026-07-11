@@ -38,8 +38,8 @@ export default function CoursesPage() {
 
   const handleAddLevel = async (courseId: string) => {
     if (!levelNum) return;
-    await createLevel.mutateAsync({ course_id: courseId, level_number: levelNum, level_name: levelName || undefined, price_cents: Math.round(parseFloat(priceYuan) * 100) });
-    setLevelNum(prev => prev + 1); setLevelName(""); setPriceYuan("200");
+    await createLevel.mutateAsync({ course_id: courseId, level_number: levelNum, level_name: levelName || undefined, price_cents: Math.round(parseFloat(priceYuan)*100), default_duration_minutes: levelDuration });
+    setLevelNum(prev => prev + 1); setLevelName(""); setPriceYuan(""); setLevelDuration(undefined);
     setShowLevelFormFor(null);
   };
 
@@ -121,16 +121,20 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
           {levels?.map((lvl: any) => (
             <div key={lvl.id} className="flex items-center justify-between text-sm py-1">
               <span className="text-gray-700">{lvl.level_name || `第 ${lvl.level_number} 级`}</span>
-              <span className="text-gray-600 font-medium">¥{(lvl.price_cents / 100).toFixed(0)} / 节</span>
+              <span className="text-gray-600">
+                ¥{(lvl.price_cents / 100).toFixed(0)} / 节
+                {lvl.default_duration_minutes ? ` · ${lvl.default_duration_minutes}min` : ""}
+              </span>
             </div>
           ))}
 
           {showLevelForm ? (
             <div className="bg-gray-50 rounded p-3 space-y-2 mt-3">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <div><label className="block text-xs text-gray-600 mb-1">等级序号</label><input type="number" min={1} className="w-full px-2 py-1 border rounded text-sm" value={levelNum} onChange={e => setLevelNum(parseInt(e.target.value)||1)} /></div>
                 <div><label className="block text-xs text-gray-600 mb-1">等级名</label><input className="w-full px-2 py-1 border rounded text-sm" value={levelName} onChange={e => setLevelName(e.target.value)} placeholder="初级" /></div>
                 <div><label className="block text-xs text-gray-600 mb-1">单节课费（元）</label><input className="w-full px-2 py-1 border rounded text-sm" value={priceYuan} onChange={e => setPriceYuan(e.target.value)} /></div>
+                <div><label className="block text-xs text-gray-600 mb-1">课时（分，留空=课程默认）</label><input type="number" min={15} max={240} className="w-full px-2 py-1 border rounded text-sm" value={levelDuration ?? ""} onChange={e => setLevelDuration(e.target.value ? parseInt(e.target.value) : undefined)} placeholder={String(course.default_duration_minutes ?? 60)} /></div>
               </div>
               <div className="flex gap-2">
                 <button onClick={onAddLevel} disabled={addingLevel} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{addingLevel ? "保存中..." : "保存"}</button>

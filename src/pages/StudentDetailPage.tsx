@@ -144,16 +144,20 @@ function EnrollmentCard({ enrollment, studentId }: any) {
   const { data: slots } = useClassSlots(enrollment.id);
   const qc = useQueryClient();
 
-  // 获取课程默认时长
+  // 获取课时长度：等级优先，否则用课程默认
   useEffect(() => {
     const loadDuration = async () => {
-      const { data: course } = await supabase.from("courses").select("default_duration_minutes").eq("id", enrollment.course_id).single();
-      if (course?.default_duration_minutes) {
-        setDuration(course.default_duration_minutes);
+      if (enrollment.exam_levels?.default_duration_minutes) {
+        setDuration(enrollment.exam_levels.default_duration_minutes);
+      } else {
+        const { data: course } = await supabase.from("courses").select("default_duration_minutes").eq("id", enrollment.course_id).single();
+        if (course?.default_duration_minutes) {
+          setDuration(course.default_duration_minutes);
+        }
       }
     };
     loadDuration();
-  }, [enrollment.course_id]);
+  }, [enrollment.course_id, enrollment.exam_levels?.id]);
 
   // 自动计算结束时间
   const handleStartTimeChange = (t: string) => {

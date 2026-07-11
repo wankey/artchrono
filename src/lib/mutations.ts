@@ -94,7 +94,7 @@ export function useCreateCourse() {
 export function useCreateExamLevel() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { course_id: string; level_number: number; level_name?: string; price_cents: number; description?: string }) => {
+    mutationFn: async (input: { course_id: string; level_number: number; level_name?: string; price_cents: number; description?: string; default_duration_minutes?: number }) => {
       const { data, error } = await supabase
         .from("exam_levels")
         .insert({
@@ -103,6 +103,7 @@ export function useCreateExamLevel() {
           level_name: input.level_name || null,
           price_cents: input.price_cents,
           description: input.description || null,
+          default_duration_minutes: input.default_duration_minutes || null,
         })
         .select()
         .single();
