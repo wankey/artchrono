@@ -157,7 +157,7 @@ function PaymentsTab({ studentId }: { studentId: string }) {
             <tbody>
               {payments.map((p) => (
                 <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-600">{new Date(p.paid_at).toLocaleDateString("zh-CN")}</td>
+                  <td className="px-4 py-3 text-gray-600">{new Date(p.paid_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-gray-900">
                     {p.enrollments?.courses?.name ?? "—"}
                     {p.enrollments?.exam_levels?.level_name
@@ -229,7 +229,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
                 return (
                   <tr key={r.id} className="border-b last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900">
-                      {new Date(r.scheduled_classes?.scheduled_date ?? r.marked_at).toLocaleDateString("zh-CN")}
+                      {new Date(r.scheduled_classes?.scheduled_date ?? r.marked_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-gray-700">
                       {(r as any).enrollments?.courses?.name ?? "—"}

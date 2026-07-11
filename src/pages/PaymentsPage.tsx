@@ -240,7 +240,7 @@ function PaymentHistory() {
               ) : (
                 (payments ?? []).map((p: any, i: number) => (
                   <tr key={p.id ?? i} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-600">{new Date(p.paid_at).toLocaleDateString("zh-CN")}</td>
+                    <td className="px-4 py-3 text-gray-600">{new Date(p.paid_at).toLocaleDateString()}</td>
                     <td className="px-4 py-3 text-gray-900 font-medium">{p.students?.name ?? "—"}</td>
                     <td className="px-4 py-3 text-gray-700">
                       {p.enrollments?.courses?.name ?? "—"}

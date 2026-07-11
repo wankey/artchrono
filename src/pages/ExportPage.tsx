@@ -65,7 +65,7 @@ export default function ExportPage() {
 
     for (const p of payments ?? []) {
       rows.push([
-        new Date(p.paid_at).toLocaleDateString("zh-CN"),
+        new Date(p.paid_at).toLocaleDateString(),
         (p as any).students?.name ?? "",
         (p as any).enrollments?.courses?.name ?? "",
         (p as any).enrollments?.exam_levels?.level_name ?? `第${(p as any).enrollments?.exam_levels?.level_number ?? "—"}级`,

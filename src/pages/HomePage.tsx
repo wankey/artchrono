@@ -77,7 +77,7 @@ function DayView({ onSelectStudent }: { onSelectStudent?: (id: string) => void }
   const qc = useQueryClient();
   const [offlineQueueCount, setOfflineQueueCount] = useState(0);
   const [online, setOnline] = useState(isOnline());
-  const today = new Date().toLocaleDateString("zh-CN", {
+  const today = new Date().toLocaleDateString(undefined, {
     year: "numeric", month: "long", day: "numeric", weekday: "long",
   });
 
