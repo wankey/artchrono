@@ -8,9 +8,11 @@ import StudentsPage from "@/pages/StudentsPage";
 import StudentDetailPage from "@/pages/StudentDetailPage";
 import CoursesPage from "@/pages/CoursesPage";
 import PaymentsPage from "@/pages/PaymentsPage";
+import ExportPage from "@/pages/ExportPage";
+import OnboardingPage from "@/pages/OnboardingPage";
 import { CalendarDays, Users, GraduationCap, CreditCard, LogOut } from "lucide-react";
 
-type Page = "home" | "students" | "student_detail" | "courses" | "payments";
+type Page = "home" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding";
 
 function Layout() {
   const [page, setPage] = useState<Page>("home");
@@ -50,6 +52,8 @@ function Layout() {
         )}
         {page === "courses" && <CoursesPage />}
         {page === "payments" && <PaymentsPage />}
+        {page === "export" && <ExportPage />}
+        {page === "onboarding" && <OnboardingPage onComplete={() => setPage("home")} />}
       </main>
     </div>
   );
