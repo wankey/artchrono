@@ -22,6 +22,7 @@ export default function CoursesPage() {
   const [levelNum, setLevelNum] = useState(1);
   const [levelName, setLevelName] = useState("");
   const [priceYuan, setPriceYuan] = useState("200");
+  const [levelDuration, setLevelDuration] = useState<number | undefined>();
 
   // 更新课程时长
   const handleUpdateDuration = async (id: string, mins: number) => {
@@ -74,9 +75,10 @@ export default function CoursesPage() {
         {courses?.length === 0 && <div className="text-center py-12 text-gray-400">还没有课程</div>}
         {courses?.map((course: any) => (
           <CourseCard key={course.id} course={course} expanded={expandedCourse === course.id} onToggle={() => setExpandedCourse(expandedCourse === course.id ? null : course.id)}
-            showLevelForm={showLevelFormFor === course.id} onShowLevelForm={() => setShowLevelFormFor(course.id)} onHideLevelForm={() => setShowLevelFormFor(null)}
+            showLevelForm={showLevelFormFor === course.id} onShowLevelForm={() => setShowLevelFormFor(course.id)} onHideLevelForm={() => { setShowLevelFormFor(null); setLevelDuration(undefined); }}
             levelNum={levelNum} setLevelNum={setLevelNum} levelName={levelName} setLevelName={setLevelName}
-            priceYuan={priceYuan} setPriceYuan={setPriceYuan} onAddLevel={() => handleAddLevel(course.id)} addingLevel={createLevel.isPending}
+            priceYuan={priceYuan} setPriceYuan={setPriceYuan} levelDuration={levelDuration} setLevelDuration={setLevelDuration}
+            course={course} onAddLevel={() => handleAddLevel(course.id)} addingLevel={createLevel.isPending}
             onUpdateDuration={(mins: number) => handleUpdateDuration(course.id, mins)} />
         ))}
       </div>
@@ -84,7 +86,7 @@ export default function CoursesPage() {
   );
 }
 
-function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm, onHideLevelForm, levelNum, setLevelNum, levelName, setLevelName, priceYuan, setPriceYuan, onAddLevel, addingLevel, onUpdateDuration }: any) {
+function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm, onHideLevelForm, levelNum, setLevelNum, levelName, setLevelName, priceYuan, setPriceYuan, levelDuration, setLevelDuration, onAddLevel, addingLevel, onUpdateDuration }: any) {
   const { data: levels } = useExamLevels(course.id);
   const [editingDuration, setEditingDuration] = useState(false);
   const [dur, setDur] = useState(course.default_duration_minutes ?? 60);
@@ -134,7 +136,7 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
                 <div><label className="block text-xs text-gray-600 mb-1">等级序号</label><input type="number" min={1} className="w-full px-2 py-1 border rounded text-sm" value={levelNum} onChange={e => setLevelNum(parseInt(e.target.value)||1)} /></div>
                 <div><label className="block text-xs text-gray-600 mb-1">等级名</label><input className="w-full px-2 py-1 border rounded text-sm" value={levelName} onChange={e => setLevelName(e.target.value)} placeholder="初级" /></div>
                 <div><label className="block text-xs text-gray-600 mb-1">单节课费（元）</label><input className="w-full px-2 py-1 border rounded text-sm" value={priceYuan} onChange={e => setPriceYuan(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">课时（分，留空=课程默认）</label><input type="number" min={15} max={240} className="w-full px-2 py-1 border rounded text-sm" value={levelDuration ?? ""} onChange={e => setLevelDuration(e.target.value ? parseInt(e.target.value) : undefined)} placeholder={String(course.default_duration_minutes ?? 60)} /></div>
+                <div><label className="block text-xs text-gray-600 mb-1">课时（分，留空=默认）</label><input type="number" min={15} max={240} className="w-full px-2 py-1 border rounded text-sm" value={levelDuration ?? ""} onChange={e => setLevelDuration(e.target.value ? parseInt(e.target.value) : undefined)} placeholder={String(course.default_duration_minutes ?? 60)} /></div>
               </div>
               <div className="flex gap-2">
                 <button onClick={onAddLevel} disabled={addingLevel} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{addingLevel ? "保存中..." : "保存"}</button>
