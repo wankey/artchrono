@@ -111,7 +111,7 @@ export function useEnrollments(studentId: string | undefined) {
       if (!studentId) return [];
       const { data, error } = await supabase
         .from("enrollments")
-        .select("*, courses(name), exam_levels(level_number, level_name, price_cents)")
+        .select("*, courses(name, default_duration_minutes), exam_levels(level_number, level_name, price_cents, default_duration_minutes)")
         .eq("student_id", studentId)
         .eq("status", "active")
         .order("created_at", { ascending: false });
