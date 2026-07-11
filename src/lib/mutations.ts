@@ -200,9 +200,12 @@ export function useCreateClassSlot() {
         .single();
       if (error) throw error;
 
-      // 有课位后立即触发 regeneration
-      // V1：先不调 RPC（等 weekly cron 兜底）
-      // V1.1：改为此处调 regenerate_for_enrollment RPC
+      // 有课位后立即触发 regeneration（调用 DB RPC）
+      try {
+        await supabase.rpc("regenerate_for_enrollment", { p_enrollment_id: input.enrollment_id });
+      } catch (e) {
+        console.warn("[ClassSlot] regeneration RPC failed (non-fatal):", e);
+      }
       return data;
     },
     onSuccess: () => {

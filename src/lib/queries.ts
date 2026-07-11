@@ -79,6 +79,28 @@ export function useExamLevels(courseId: string | undefined) {
 }
 
 // =============================================================================
+// Scheduled Classes (today)
+// =============================================================================
+
+export function useTodayClasses() {
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Shanghai" }); // YYYY-MM-DD
+  return useQuery({
+    queryKey: ["today_classes", today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_classes")
+        .select("*, students(name), class_slots(location)")
+        .eq("scheduled_date", today)
+        .order("start_time");
+      if (error) throw error;
+      return data;
+    },
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+}
+
+// =============================================================================
 // Enrollments (per student)
 // =============================================================================
 
