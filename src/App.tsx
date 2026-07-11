@@ -1,7 +1,7 @@
 // App 根组件 - V1 阶段
 // 根据 auth state 切换 login / home
 
-import { AuthProvider, useAuth } from "@/pages/Auth";
+import { AuthProvider, useAuth } from "@/pages/Login";
 import LoginPage from "@/pages/LoginPage";
 import HomePage from "@/pages/HomePage";
 

@@ -47,10 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log("[Auth] signIn start");
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log("[Auth] signIn result:", { error: error?.message, hasSession: !!data.session });
     if (error) return { error: error.message };
     if (data.session) {
-      await saveSession(data.session);
+      try {
+        await saveSession(data.session);
+      } catch (e) {
+        console.warn("[Auth] saveSession failed (non-fatal):", e);
+      }
       setState({
         status: "authenticated",
         session: data.session,
@@ -61,16 +67,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    console.log("[Auth] signUp start, URL:", import.meta.env.VITE_SUPABASE_URL?.slice(0, 30) + "...");
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: undefined,
+      },
+    });
+    console.log("[Auth] signUp result:", { error: error?.message, hasSession: !!data.session, hasUser: !!data.user });
     if (error) return { error: error.message };
     if (data.session) {
-      // Confirm email 关掉后会立即返回 session；否则需 email 验证
       await saveSession(data.session);
       setState({
         status: "authenticated",
         session: data.session,
         user: data.user!,
       });
+    } else if (data.user && data.user.identities?.length === 0) {
+      // 邮箱已存在：提示去登录
+      return { error: "邮箱已存在，请直接登录" };
+    } else if (!data.session) {
+      // Confirm email 还没关 — 需要去邮箱验证
+      return { error: "注册成功但需邮箱验证。去 Supabase Dashboard → Authentication → Providers → Email → 关闭 Confirm email" };
     }
     return { error: null };
   };

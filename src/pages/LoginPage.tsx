@@ -2,7 +2,7 @@
 // V1 单用户自用：注册即第一个用户，登录即用同一组邮箱密码
 
 import { useState, FormEvent } from "react";
-import { useAuth } from "@/pages/Auth";
+import { useAuth } from "@/pages/Login";
 
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();

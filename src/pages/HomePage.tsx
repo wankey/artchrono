@@ -1,7 +1,7 @@
 // 已登录用户的首页（骨架）
 // V1 暂时只是占位，下一步（T6+）填充真实内容
 
-import { useAuth } from "@/pages/Auth";
+import { useAuth } from "@/pages/Login";
 import { LogOut } from "lucide-react";
 
 export default function HomePage() {
