@@ -5,6 +5,12 @@ import { useStudents, useEnrollments } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function PaymentsPage() {
   const qc = useQueryClient();
@@ -68,19 +74,19 @@ export default function PaymentsPage() {
           <p className="text-sm text-gray-500 mb-4">先选学生，再选对应报名 → 录入付款</p>
           <div className="space-y-2">
             {students?.map((s) => (
-              <div key={s.id}
-                className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer"
-                onClick={() => setSelectedStudentId(s.id)}>
-                <h4 className="font-semibold text-gray-900">{s.name}</h4>
-                <p className="text-sm text-gray-500">{s.parent_name} · {s.parent_phone}</p>
-              </div>
+              <Card key={s.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedStudentId(s.id)}>
+                <CardContent className="p-4">
+                  <h4 className="font-semibold text-gray-900">{s.name}</h4>
+                  <p className="text-sm text-gray-500">{s.parent_name} · {s.parent_phone}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </>
       ) : (
         <>
           {/* Step 1.5: 回退 */}
-          <button onClick={() => setSelectedStudentId(null)} className="text-blue-600 text-sm hover:underline mb-4">← 选其他学生</button>
+          <Button variant="link" size="sm" onClick={() => setSelectedStudentId(null)} className="mb-4">← 选其他学生</Button>
 
           {/* Step 2: 选报名 */}
           {!selectedEnrollmentId ? (
@@ -89,69 +95,68 @@ export default function PaymentsPage() {
                 <p className="text-gray-400">该学生还没有报名</p>
               ) : (
                 enrollments?.map((enr: any) => (
-                  <div key={enr.id}
-                    className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => handleEnrollmentChange(enr.id)}>
-                    <h4 className="font-semibold text-gray-900">
-                      {enr.courses?.name} · 第{enr.exam_levels?.level_number}级
-                    </h4>
-                    <p className="text-sm text-gray-500">
-                      余额：<span className={enr.classes_remaining <= 2 ? "text-red-600 font-semibold" : "font-semibold"}>{enr.classes_remaining}</span> 节
-                    </p>
-                  </div>
+                  <Card key={enr.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleEnrollmentChange(enr.id)}>
+                    <CardContent className="p-4">
+                      <h4 className="font-semibold text-gray-900">
+                        {enr.courses?.name} · 第{enr.exam_levels?.level_number}级
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        余额：<span className={enr.classes_remaining <= 2 ? "text-red-600 font-semibold" : "font-semibold"}>{enr.classes_remaining}</span> 节
+                      </p>
+                    </CardContent>
+                  </Card>
                 ))
               )}
             </div>
           ) : (
             <>
               {/* Step 3: 填写付款信息 */}
-              <div className="bg-white rounded-lg shadow p-6 space-y-4 mt-2">
-                <h3 className="font-semibold">
-                  {selectedEnrollment?.courses?.name} · 第{selectedEnrollment?.exam_levels?.level_number}级
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    当前余额：{selectedEnrollment?.classes_remaining} 节
-                  </span>
-                </h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">节数 *</label>
-                    <input type="number" min={1} value={classesPaid}
-                      onChange={(e) => {
-                        setClassesPaid(parseInt(e.target.value) || 0);
-                        if (selectedEnrollment?.exam_levels?.price_cents) {
-                          setAmountYuan(((selectedEnrollment.exam_levels.price_cents * parseInt(e.target.value)) / 100).toFixed(0));
-                        }
-                      }}
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <Card className="mt-2">
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="font-semibold">
+                    {selectedEnrollment?.courses?.name} · 第{selectedEnrollment?.exam_levels?.level_number}级
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      当前余额：{selectedEnrollment?.classes_remaining} 节
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <Label>节数 *</Label>
+                      <Input type="number" min={1} value={classesPaid}
+                        onChange={(e) => {
+                          setClassesPaid(parseInt(e.target.value) || 0);
+                          if (selectedEnrollment?.exam_levels?.price_cents) {
+                            setAmountYuan(((selectedEnrollment.exam_levels.price_cents * parseInt(e.target.value)) / 100).toFixed(0));
+                          }
+                        }} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>金额（元）</Label>
+                      <Input type="text" value={amountYuan} onChange={(e) => setAmountYuan(e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>收款方式</Label>
+                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="wechat">微信</SelectItem>
+                          <SelectItem value="alipay">支付宝</SelectItem>
+                          <SelectItem value="cash">现金</SelectItem>
+                          <SelectItem value="bank">银行转账</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">金额（元）</label>
-                    <input type="text" value={amountYuan}
-                      onChange={(e) => setAmountYuan(e.target.value)}
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+                  {success && <Alert className="border-green-200 bg-green-50 text-green-800"><AlertDescription>{success}</AlertDescription></Alert>}
+                  <div className="flex gap-2">
+                    <Button onClick={handleSubmit} disabled={loading || !selectedEnrollmentId || classesPaid <= 0}>
+                      {loading ? "处理中..." : "确认收款"}
+                    </Button>
+                    <Button variant="outline" onClick={() => setSelectedEnrollmentId("")}>重选</Button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">收款方式</label>
-                    <select value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="wechat">微信</option>
-                      <option value="alipay">支付宝</option>
-                      <option value="cash">现金</option>
-                      <option value="bank">银行转账</option>
-                    </select>
-                  </div>
-                </div>
-                {error && <div className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded">{error}</div>}
-                {success && <div className="text-green-600 text-sm bg-green-50 px-3 py-2 rounded">{success}</div>}
-                <div className="flex gap-2">
-                  <button onClick={handleSubmit} disabled={loading || !selectedEnrollmentId || classesPaid <= 0}
-                    className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {loading ? "处理中..." : "确认收款"}
-                  </button>
-                  <button onClick={() => setSelectedEnrollmentId("")} className="text-gray-600 px-4 py-2 rounded border hover:bg-gray-50">重选</button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </>
           )}
         </>
