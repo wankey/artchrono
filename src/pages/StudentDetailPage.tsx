@@ -67,7 +67,7 @@ function EnrollmentsTab({ student }: { student: any }) {
 }
 
 // 新建报名（含升级下一级预填）
-function AddEnrollmentForm({ studentId, onDone, prefillCourseId, prefillLevelNum }: { studentId: string; onDone: () => void; prefillCourseId?: string; prefillLevelNum?: number }) {
+function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefillLevelNum }: { studentId: string; onDone: () => void; onCancel?: () => void; prefillCourseId?: string; prefillLevelNum?: number }) {
   const { data: courses } = useCourses();
   const [courseId, setCourseId] = useState(prefillCourseId ?? "");
   const { data: levels } = useExamLevels(courseId || undefined);
@@ -110,7 +110,7 @@ function AddEnrollmentForm({ studentId, onDone, prefillCourseId, prefillLevelNum
       {error && <div className="text-red-600 text-sm bg-red-50 px-3 py-1 rounded">{error}</div>}
       <div className="flex gap-2">
         <button onClick={handleSubmit} disabled={createEnrollment.isPending || !courseId || !levelId} className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{createEnrollment.isPending ? "保存中..." : "保存"}</button>
-        <button onClick={onDone} className="text-gray-600 px-4 py-1.5 rounded text-sm border hover:bg-gray-50">取消</button>
+        <button onClick={() => onCancel ? onCancel() : onDone()} className="text-gray-600 px-4 py-1.5 rounded text-sm border hover:bg-gray-50">取消</button>
       </div>
     </div>
   );
@@ -195,6 +195,7 @@ function EnrollmentCard({ enrollment, studentId }: any) {
             studentId={studentId}
             prefillCourseId={enrollment.course_id}
             prefillLevelNum={nextLevelNum}
+            onCancel={() => setShowUpgrade(false)}
             onDone={async () => {
               // 旧报名标 completed + 转移余额
               const oldBalance = enrollment.classes_remaining;
