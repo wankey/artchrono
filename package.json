@@ -25,11 +25,14 @@
     "@tauri-apps/plugin-notification": "^2.3.3",
     "@tauri-apps/plugin-store": "^2.4.3",
     "@tauri-apps/plugin-stronghold": "^2.3.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "date-holidays": "^3.32.0",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.0.0"
+    "react-router-dom": "^7.0.0",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
@@ -39,6 +42,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "shadcn": "^4.13.0",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2",
     "vite": "^8.1.4",
