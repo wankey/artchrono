@@ -18,7 +18,11 @@ export default function StudentDetailPage({ studentId, onBack }: { studentId: st
       <div className="flex items-center gap-4 mb-6">
         <button onClick={onBack} className="text-gray-500 hover:text-gray-700"><ArrowLeft className="w-5 h-5" /></button>
         <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${student.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>{student.status === "active" ? "在读" : String(student.status)}</span>
+        <span className={`px-2 py-1 rounded text-xs font-medium ${
+          student.status === "graduated" ? "bg-gray-100 text-gray-600" :
+          student.status === "paused" ? "bg-yellow-100 text-yellow-700" :
+          "bg-green-100 text-green-700"
+        }`}>{student.status === "graduated" ? "已毕业" : student.status === "paused" ? "暂停" : "在读"}</span>
       </div>
       <div className="flex gap-0 border-b mb-6">
         <TabButton label="报名与课位" active={tab === "enrollments"} onClick={() => setTab("enrollments")} />
@@ -52,12 +56,23 @@ function InfoTab({ student }: any) {
 function EnrollmentsTab({ student }: { student: any }) {
   const { data: enrollments } = useEnrollments(student.id);
   const [showAdd, setShowAdd] = useState(false);
+  const qc = useQueryClient();
+
+  const handleGraduate = async () => {
+    await supabase.from("students").update({ status: "graduated" }).eq("id", student.id);
+    qc.invalidateQueries({ queryKey: ["students"] });
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">报名</h3>
-        <button onClick={() => setShowAdd(!showAdd)} className="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"><Plus className="w-3.5 h-3.5" />新建报名</button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowAdd(!showAdd)} className="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"><Plus className="w-3.5 h-3.5" />新建报名</button>
+          {student.status !== "graduated" && (
+            <button onClick={handleGraduate} className="flex items-center gap-1 text-sm bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">毕业</button>
+          )}
+        </div>
       </div>
       {showAdd && <AddEnrollmentForm studentId={student.id} onDone={() => setShowAdd(false)} />}
       {enrollments?.length === 0 && !showAdd && <div className="text-center py-8 text-gray-400">还没有报名</div>}
@@ -160,8 +175,11 @@ function EnrollmentCard({ enrollment, studentId }: any) {
     qc.invalidateQueries({ queryKey: ["enrollments"] });
   };
 
-  // 获取下一级信息
+  // 获取下一级信息 + 检查是否已是最高级
   const nextLevelNum = (enrollment.exam_levels?.level_number ?? 0) + 1;
+  const { data: allLevels } = useExamLevels(enrollment.course_id);
+  const maxLevelNum = allLevels?.length ? Math.max(...allLevels.map((l: any) => l.level_number)) : 0;
+  const isMaxLevel = (enrollment.exam_levels?.level_number ?? 0) >= maxLevelNum;
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
@@ -180,7 +198,9 @@ function EnrollmentCard({ enrollment, studentId }: any) {
         <div className="flex gap-2">
           <button onClick={() => setShowSlotForm(!showSlotForm)} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><Plus className="w-3.5 h-3.5" />排课</button>
           <button onClick={handleComplete} className="text-sm text-orange-600 hover:underline">结束</button>
-          <button onClick={() => setShowUpgrade(!showUpgrade)} className="text-sm text-green-600 hover:underline">升级</button>
+          {!isMaxLevel && (
+            <button onClick={() => setShowUpgrade(!showUpgrade)} className="text-sm text-green-600 hover:underline">升级</button>
+          )}
         </div>
       </div>
 
@@ -221,7 +241,7 @@ function EnrollmentCard({ enrollment, studentId }: any) {
         <div className="bg-gray-50 rounded p-3 mb-3 grid grid-cols-4 gap-2">
           <div><label className="block text-xs text-gray-600 mb-1">星期</label><select className="w-full px-2 py-1.5 border rounded text-sm" value={weekday} onChange={e => setWeekday(parseInt(e.target.value))}>{WEEKDAY_LABELS.map((l, i) => <option key={i} value={i}>{l}</option>)}</select></div>
           <div><label className="block text-xs text-gray-600 mb-1">开始</label><input type="time" className="w-full px-2 py-1.5 border rounded text-sm" value={startTime} onChange={e => handleStartTimeChange(e.target.value)} /></div>
-          <div><label className="block text-xs text-gray-600 mb-1">结束（{duration}min）</label><input type="time" className="w-full px-2 py-1.5 border rounded text-sm bg-gray-100" value={endTime} readOnly /></div>
+          <div><label className="block text-xs text-gray-600 mb-1">结束（{duration}min）</label><input type="time" className="w-full px-2 py-1.5 border rounded text-sm" value={endTime} onChange={e => setEndTime(e.target.value)} /></div>
           <div><label className="block text-xs text-gray-600 mb-1">教室</label><input className="w-full px-2 py-1.5 border rounded text-sm" value={location} onChange={e => setLocation(e.target.value)} placeholder="选填" /></div>
           <div className="col-span-4 flex gap-2 mt-1">
             <button onClick={handleAddSlot} disabled={createSlot.isPending} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{createSlot.isPending ? "保存中..." : "保存"}</button>

@@ -102,8 +102,11 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
                     <div className="flex items-center gap-3">
                       <h4 className="font-semibold text-gray-900">{s.name}</h4>
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        s.status === "active" ? "bg-green-100 text-green-700" : s.status === "paused" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"
-                      }`}>{s.status === "active" ? "在读" : s.status === "paused" ? "暂停" : "毕业"}</span>
+                        s.status === "graduated" ? "bg-gray-100 text-gray-600" :
+                        s.status === "paused" ? "bg-yellow-100 text-yellow-700" :
+                        enrollments.length === 0 ? "bg-blue-100 text-blue-700" :
+                        "bg-green-100 text-green-700"
+                      }`}>{s.status === "graduated" ? "已毕业" : s.status === "paused" ? "暂停" : enrollments.length === 0 ? "预报名" : "在读"}</span>
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
                       {s.parent_name && <span className="mr-3">家长：{s.parent_name}</span>}
