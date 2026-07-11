@@ -6,6 +6,9 @@ import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Check, X, WifiOff } from "lucide-react";
 import { enqueueOp, getPendingOps, removeOp, updateOpStatus, isOnline } from "@/lib/offline";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const STATUS_LABELS: Record<string, string> = {
   scheduled: "待上课",
@@ -103,65 +106,68 @@ export default function HomePage() {
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* 离线/队列状态横幅 */}
       {(!online || offlineQueueCount > 0) && (
-        <div className="mb-4 px-4 py-2 rounded flex items-center gap-2 text-sm font-medium" style={{
-          background: !online ? "#FEF3C7" : "#DBEAFE",
-          color: !online ? "#92400E" : "#1E40AF",
-        }}>
-          {!online && <><WifiOff className="w-4 h-4" /> 离线模式</>}
-          {offlineQueueCount > 0 && <> · {offlineQueueCount} 个操作待同步</>}
-          {online && offlineQueueCount > 0 && (
-            <button onClick={replayQueue} className="ml-auto underline">立即同步</button>
-          )}
-        </div>
+        <Alert variant={!online ? "destructive" : "default"} className="mb-4">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            {!online && <><WifiOff className="w-4 h-4" /> 离线模式</>}
+            {offlineQueueCount > 0 && <> · {offlineQueueCount} 个操作待同步</>}
+            {online && offlineQueueCount > 0 && (
+              <Button variant="link" size="sm" onClick={replayQueue} className="ml-auto underline">立即同步</Button>
+            )}
+          </div>
+        </Alert>
       )}
       <h2 className="text-2xl font-bold text-gray-900 mb-6">{today}</h2>
 
       {error ? (
-        <div className="bg-red-50 text-red-600 p-4 rounded">{String(error)}</div>
+        <Alert variant="destructive"><AlertDescription>{String(error)}</AlertDescription></Alert>
       ) : !classes || classes.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="text-6xl mb-4">📅</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">今天没有排课</h3>
-          <p className="text-gray-500">
-            先去「学生管理」给已报名的学生排课吧
-          </p>
-        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="text-6xl mb-4">📅</div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">今天没有排课</h3>
+            <p className="text-gray-500">
+              先去「学生管理」给已报名的学生排课吧
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-3">
           {classes.map((sc) => {
             const isDone = sc.status !== "scheduled";
             return (
-              <div key={sc.id} className={`bg-white rounded-lg shadow p-4 flex items-center justify-between ${isDone ? "opacity-60" : ""}`}>
-                <div className="flex items-center gap-4">
-                  <div className="text-2xl font-bold text-gray-700 w-32">
-                    {sc.start_time?.slice(0, 5)} - {sc.end_time?.slice(0, 5)}
+              <Card key={sc.id} className={isDone ? "opacity-60" : ""}>
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-gray-700 w-32">
+                      {sc.start_time?.slice(0, 5)} - {sc.end_time?.slice(0, 5)}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        {sc.students?.name ?? "-"}
+                      </h4>
+                      <p className={`text-sm ${isDone ? "text-gray-400" : "text-green-600"}`}>
+                        {STATUS_LABELS[sc.status] ?? sc.status}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">
-                      {sc.students?.name ?? "-"}
-                    </h4>
-                    <p className={`text-sm ${isDone ? "text-gray-400" : "text-green-600"}`}>
-                      {STATUS_LABELS[sc.status] ?? sc.status}
-                    </p>
-                  </div>
-                </div>
-                {!isDone && (
-                  <div className="flex gap-2">
-                    <button onClick={() => handleMark(sc.id, "attended")}
-                      className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700">
-                      <Check className="w-4 h-4" />出席
-                    </button>
-                    <button onClick={() => handleMark(sc.id, "no_show")}
-                      className="flex items-center gap-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm hover:bg-yellow-600">
-                      <X className="w-4 h-4" />缺勤
-                    </button>
-                    <button onClick={() => handleMark(sc.id, "cancelled")}
-                      className="flex items-center gap-1 bg-gray-400 text-white px-3 py-2 rounded text-sm hover:bg-gray-500">
-                      取消
-                    </button>
-                  </div>
-                )}
-              </div>
+                  {!isDone && (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleMark(sc.id, "attended")}
+                        className="bg-green-600 hover:bg-green-700">
+                        <Check className="w-4 h-4" />出席
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleMark(sc.id, "no_show")}
+                        className="border-yellow-500 text-yellow-700 hover:bg-yellow-50">
+                        <X className="w-4 h-4" />缺勤
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleMark(sc.id, "cancelled")}
+                        className="text-gray-500 hover:text-gray-700">
+                        取消
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             );
           })}
         </div>
