@@ -100,9 +100,8 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
             const enrollments = (allEnrollments ?? []).filter((e: any) => e.student_id === s.id);
             return (
               <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 relative">
-                <div className="cursor-pointer" onClick={() => onSelectStudent?.(s.id)}>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1 cursor-pointer" onClick={() => onSelectStudent?.(s.id)}>
                     <div className="flex items-center gap-3">
                       <h4 className="font-semibold text-gray-900">{s.name}</h4>
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
@@ -139,7 +138,6 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
-                </div>
                 </div>
               </div>
             );
