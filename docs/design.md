@@ -1456,6 +1456,12 @@ SELECT * FROM scheduled_classes ORDER BY scheduled_date, start_time;
 - ✅ **Reminder 双轨设计**：UI 横幅实时计算（enrollments）+ reminders 表审计日志（cron）
 - ✅ **Eng Review verdict → CLEARED**：5 个 UNRESOLVED DECISIONS 全部 resolved
 
+### Revision 19 — 落地 shadcn UI 库
+
+将 Tech Stack 表中列出的 shadcn ^4.13 (CLI) 实际接入。所有页面的手写 `<button>` / `<input>` / `<select>` / `<label>` / `<div className="bg-white rounded-lg shadow">` 已迁移到 shadcn 组件（Button、Input、Label、Select、Card、Badge、Alert、Separator、Dialog）。`src/lib/*` 数据层未动；Tauri 配置未动；视觉保持等价。
+
+新增依赖：`shadcn`（devDep CLI ^4.13） + `class-variance-authority` ^0.7 + `clsx` ^2.1 + `tailwind-merge` ^3.6。`components.json` 已生成于项目根；`src/components/ui/*` 共 9 个组件文件。CSS 变量已纳入 `src/index.css` 的 `@theme inline` 块。
+
 ### 已知限制 / 未来优化项
 - 📋 UI 视觉草图（V1 实施时出 wireframe）
 - 📋 Testing strategy（V1 先手动，V1.1 加 Vitest + Playwright）
