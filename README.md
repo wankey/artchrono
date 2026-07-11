@@ -1,6 +1,6 @@
-# 课程管家 (Course Manager)
+# 艺时纪 ArtChrono
 
-> 简易艺术培训机构 / 个体老师课程管理系统
+> 记录每一刻艺术时光 — 独立艺术老师的课程管家
 
 **设计文档**：[docs/design.md](docs/design.md) — 完整 spec + 17 次修订记录 + 3 轮 review
 
@@ -20,7 +20,7 @@
 ### 1. 创建 Supabase 项目
 
 1. 访问 https://supabase.com/dashboard
-2. 新建项目：`art-course-manager`
+2. 新建项目：`artchrono`
 3. 选择区域：Singapore（亚洲延迟最低）
 4. 设置数据库密码（记下来！）
 5. 等待项目启动（~2 分钟）

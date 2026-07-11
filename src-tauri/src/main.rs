@@ -4,5 +4,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    course_manager_lib::run()
+    artchrono_lib::run()
 }

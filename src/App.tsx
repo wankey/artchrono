@@ -25,7 +25,7 @@ function Layout() {
       {/* Sidebar */}
       <aside className="w-56 bg-gray-900 text-gray-100 flex flex-col">
         <div className="px-4 py-4 border-b border-gray-700">
-          <h1 className="text-lg font-bold">课程管家</h1>
+          <h1 className="text-lg font-bold">艺时纪</h1>
         </div>
         <nav className="flex-1 py-2">
           <NavItem icon={<CalendarDays className="w-4 h-4" />} label="今日课程" active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />

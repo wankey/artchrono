@@ -36,9 +36,12 @@ export default function LoginPage() {
       <Card className="max-w-md w-full">
         <CardContent className="p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-            课程管家
+            艺时纪
           </h1>
-          <p className="text-gray-500 text-center mb-6">
+          <p className="text-gray-500 text-center mb-6 text-sm">
+            记录每一刻艺术时光
+          </p>
+          <p className="text-gray-400 text-center mb-6 text-xs">
             {mode === "signin" ? "登录" : "注册"}
           </p>
 

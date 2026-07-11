@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
-  "productName": "课程管家",
+  "productName": "艺时纪",
   "version": "0.1.0",
-  "identifier": "com.wankey.course-manager",
+  "identifier": "com.wankey.artchrono",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1421",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "课程管家",
+        "title": "艺时纪",
         "width": 1100,
         "height": 720,
         "minWidth": 800,
@@ -36,7 +36,7 @@
       "icons/icon.ico"
     ],
     "category": "Education",
-    "shortDescription": "课程与续费管理",
-    "longDescription": "艺术培训机构 / 个体老师的简易课程管理系统"
+    "shortDescription": "记录每一刻艺术时光",
+    "longDescription": "艺时纪 — 独立艺术老师的课程管家。排课、考勤、续费，一纪了然。"
   }
 }

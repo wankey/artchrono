@@ -1,6 +1,6 @@
 // 离线读写：IndexedDB 写队列 + 在线检测 + 自动 replay
 
-const DB_NAME = "course-manager-offline";
+const DB_NAME = "artchrono-offline";
 const DB_VERSION = 1;
 const STORE_NAME = "pending_ops";
 

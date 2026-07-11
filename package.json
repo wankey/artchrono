@@ -1,7 +1,7 @@
 {
-  "name": "course-manager",
+  "name": "artchrono",
   "version": "0.1.0",
-  "description": "艺术培训课程与续费管理系统",
+  "description": "艺时纪 — 记录每一刻艺术时光",
   "private": true,
   "type": "module",
   "scripts": {

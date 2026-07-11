@@ -1,12 +1,12 @@
 [package]
-name = "course-manager"
+name = "artchrono"
 version = "0.1.0"
-description = "艺术培训课程与续费管理系统"
+description = "艺时纪 — 记录每一刻艺术时光"
 edition = "2021"
 rust-version = "1.70"
 
 [lib]
-name = "course_manager_lib"
+name = "artchrono_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
