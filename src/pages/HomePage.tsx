@@ -1,10 +1,10 @@
 // 今日课程 + 出勤标记
 
 import { useState, useEffect } from "react";
-import { useTodayClasses } from "@/lib/queries";
+import { useTodayClasses, useLowBalanceEnrollments } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Check, X, WifiOff } from "lucide-react";
+import { Loader2, Check, X, WifiOff, AlertTriangle } from "lucide-react";
 import { enqueueOp, getPendingOps, removeOp, updateOpStatus, isOnline } from "@/lib/offline";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,8 +18,9 @@ const STATUS_LABELS: Record<string, string> = {
   make_up: "补课",
 };
 
-export default function HomePage() {
+export default function HomePage({ onSelectStudent }: { onSelectStudent?: (id: string) => void }) {
   const { data: classes, isLoading, error } = useTodayClasses();
+  const { data: lowBalanceEnrollments } = useLowBalanceEnrollments();
   const qc = useQueryClient();
   const [offlineQueueCount, setOfflineQueueCount] = useState(0);
   const [online, setOnline] = useState(isOnline());
@@ -104,6 +105,32 @@ export default function HomePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      {/* 续费提醒横幅 */}
+      {lowBalanceEnrollments && lowBalanceEnrollments.length > 0 && (
+        <Alert className="mb-4 border-orange-200 bg-orange-50">
+          <AlertTriangle className="w-4 h-4 text-orange-600" />
+          <AlertDescription>
+            <div className="flex flex-wrap items-center gap-x-1 text-sm">
+              <span className="text-orange-800 font-medium">续费提醒：</span>
+              {lowBalanceEnrollments.map((enr, i) => (
+                <span key={enr.id}>
+                  <button
+                    onClick={() => onSelectStudent?.(enr.student_id)}
+                    className="text-orange-700 hover:text-orange-900 hover:underline font-medium"
+                  >
+                    {enr.students.name}
+                  </button>
+                  <span className="text-orange-700">
+                    （{enr.courses.name} 余 <strong>{enr.classes_remaining}</strong> 节）
+                  </span>
+                  {i < lowBalanceEnrollments.length - 1 && <span className="text-orange-400 mx-1">·</span>}
+                </span>
+              ))}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* 离线/队列状态横幅 */}
       {(!online || offlineQueueCount > 0) && (
         <Alert variant={!online ? "destructive" : "default"} className="mb-4">

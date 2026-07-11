@@ -1,7 +1,7 @@
 // 学生详情 — Enrollment + Class Slot + 升级 + 付款
 
 import { useState, useEffect } from "react";
-import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots } from "@/lib/queries";
+import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots, useStudentPayments, useStudentAttendance } from "@/lib/queries";
 import { useCreateEnrollment, useCreateClassSlot } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周�
 
 export default function StudentDetailPage({ studentId, onBack }: { studentId: string; onBack: () => void }) {
   const { data: student } = useStudent(studentId);
-  const [tab, setTab] = useState<"enrollments" | "info">("enrollments");
+  const [tab, setTab] = useState<"enrollments" | "info" | "payments" | "attendance">("enrollments");
   if (!student) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -33,9 +33,13 @@ export default function StudentDetailPage({ studentId, onBack }: { studentId: st
       </div>
       <div className="flex gap-0 border-b mb-6">
         <TabButton label="报名与课位" active={tab === "enrollments"} onClick={() => setTab("enrollments")} />
+        <TabButton label="付款记录" active={tab === "payments"} onClick={() => setTab("payments")} />
+        <TabButton label="考勤历史" active={tab === "attendance"} onClick={() => setTab("attendance")} />
         <TabButton label="学生信息" active={tab === "info"} onClick={() => setTab("info")} />
       </div>
       {tab === "enrollments" && <EnrollmentsTab student={student} />}
+      {tab === "payments" && <PaymentsTab studentId={student.id} />}
+      {tab === "attendance" && <AttendanceTab studentId={student.id} />}
       {tab === "info" && <InfoTab student={student} />}
     </div>
   );
@@ -58,6 +62,137 @@ function InfoTab({ student }: any) {
       </div>
       </CardContent>
     </Card>
+  );
+}
+
+function PaymentsTab({ studentId }: { studentId: string }) {
+  const { data: payments, isLoading } = useStudentPayments(studentId);
+
+  if (isLoading) return <div className="flex items-center justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>;
+
+  if (!payments || payments.length === 0) {
+    return (
+      <Card><CardContent className="p-8 text-center">
+        <div className="text-5xl mb-4">💰</div>
+        <p className="text-gray-500">还没有付款记录</p>
+      </CardContent></Card>
+    );
+  }
+
+  const totalPaidCents = payments.reduce((sum, p) => sum + p.amount_cents, 0);
+  const totalClasses = payments.reduce((sum, p) => sum + p.classes_paid, 0);
+
+  return (
+    <div className="space-y-3">
+      <Card>
+        <CardContent className="p-4 flex gap-6 text-sm">
+          <div><span className="text-gray-500">累计缴费：</span><span className="font-semibold text-gray-900">¥{(totalPaidCents / 100).toFixed(0)}</span></div>
+          <div><span className="text-gray-500">累计购课：</span><span className="font-semibold text-gray-900">{totalClasses} 节</span></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-gray-500 text-xs">
+                <th className="text-left px-4 py-2 font-medium">日期</th>
+                <th className="text-left px-4 py-2 font-medium">课程</th>
+                <th className="text-right px-4 py-2 font-medium">节数</th>
+                <th className="text-right px-4 py-2 font-medium">金额</th>
+                <th className="text-center px-4 py-2 font-medium">方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((p) => (
+                <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <td className="px-4 py-3 text-gray-600">{new Date(p.paid_at).toLocaleDateString("zh-CN")}</td>
+                  <td className="px-4 py-3 text-gray-900">
+                    {p.enrollments?.courses?.name ?? "—"}
+                    {p.enrollments?.exam_levels?.level_name
+                      ? ` · ${p.enrollments.exam_levels.level_name}`
+                      : p.enrollments?.exam_levels?.level_number
+                        ? ` · 第${p.enrollments.exam_levels.level_number}级`
+                        : ""}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium">{p.classes_paid}</td>
+                  <td className="px-4 py-3 text-right font-medium">¥{(p.amount_cents / 100).toFixed(0)}</td>
+                  <td className="px-4 py-3 text-center text-gray-500">{p.payment_method ? ({ wechat: "微信", alipay: "支付宝", cash: "现金", bank: "银行" } as Record<string, string>)[p.payment_method] ?? p.payment_method : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+const ATTENDANCE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
+  attended: { label: "已出席", icon: "✅", color: "text-green-600" },
+  no_show: { label: "缺勤", icon: "❌", color: "text-red-600" },
+  cancelled: { label: "已取消", icon: "➖", color: "text-gray-400" },
+  make_up: { label: "补课", icon: "🔄", color: "text-blue-600" },
+};
+
+function AttendanceTab({ studentId }: { studentId: string }) {
+  const { data: records, isLoading } = useStudentAttendance(studentId);
+
+  if (isLoading) return <div className="flex items-center justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>;
+
+  if (!records || records.length === 0) {
+    return (
+      <Card><CardContent className="p-8 text-center">
+        <div className="text-5xl mb-4">📋</div>
+        <p className="text-gray-500">还没有考勤记录</p>
+      </CardContent></Card>
+    );
+  }
+
+  const attendedCount = records.filter(r => r.result === "attended").length;
+  const missedCount = records.filter(r => r.result === "no_show").length;
+
+  return (
+    <div className="space-y-3">
+      <Card>
+        <CardContent className="p-4 flex gap-6 text-sm">
+          <div><span className="text-green-600 font-semibold">✅ {attendedCount}</span><span className="text-gray-500 ml-1">次出席</span></div>
+          <div><span className="text-red-600 font-semibold">❌ {missedCount}</span><span className="text-gray-500 ml-1">次缺勤</span></div>
+          <div><span className="text-gray-600 font-semibold">{records.length}</span><span className="text-gray-500 ml-1">次总记录</span></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-gray-500 text-xs">
+                <th className="text-left px-4 py-2 font-medium">日期</th>
+                <th className="text-left px-4 py-2 font-medium">时间</th>
+                <th className="text-center px-4 py-2 font-medium">状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((r) => {
+                const info = ATTENDANCE_LABELS[r.result] ?? { label: r.result, icon: "❓", color: "text-gray-500" };
+                return (
+                  <tr key={r.id} className="border-b last:border-0 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-900">
+                      {new Date(r.scheduled_classes?.scheduled_date ?? r.marked_at).toLocaleDateString("zh-CN")}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {r.scheduled_classes?.start_time?.slice(0, 5) ?? "—"}
+                      {r.scheduled_classes?.end_time ? ` - ${r.scheduled_classes.end_time.slice(0, 5)}` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={info.color}>{info.icon} {info.label}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

@@ -42,7 +42,7 @@ function Layout() {
 
       {/* Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
-        {page === "home" && <HomePage />}
+        {page === "home" && <HomePage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />}
         {page === "students" && (
           <StudentsPage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />
         )}

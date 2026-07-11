@@ -126,6 +126,98 @@ export function useEnrollments(studentId: string | undefined) {
 // Class Slots (per enrollment or per student)
 // =============================================================================
 
+// =============================================================================
+// Low Balance Enrollments (for reminder banner)
+// =============================================================================
+
+export function useLowBalanceEnrollments() {
+  return useQuery({
+    queryKey: ["enrollments", "low_balance"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("enrollments")
+        .select("id, classes_remaining, student_id, students!inner(id, name), courses!inner(name)")
+        .eq("status", "active")
+        .lte("classes_remaining", 2)
+        .order("classes_remaining");
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<{
+        id: string;
+        classes_remaining: number;
+        student_id: string;
+        students: { id: string; name: string };
+        courses: { name: string };
+      }>;
+    },
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+}
+
+// =============================================================================
+// Payments (per student)
+// =============================================================================
+
+export function useStudentPayments(studentId: string | undefined) {
+  return useQuery({
+    queryKey: ["payments", studentId],
+    queryFn: async () => {
+      if (!studentId) return [];
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*, enrollments!inner(courses!inner(name), exam_levels!inner(level_number, level_name))")
+        .eq("student_id", studentId)
+        .order("paid_at", { ascending: false });
+      if (error) throw error;
+      return data as Array<{
+        id: string;
+        classes_paid: number;
+        amount_cents: number;
+        paid_at: string;
+        payment_method: string | null;
+        notes: string | null;
+        enrollments: {
+          courses: { name: string };
+          exam_levels: { level_number: number; level_name: string | null };
+        };
+      }>;
+    },
+    enabled: !!studentId,
+  });
+}
+
+// =============================================================================
+// Attendance History (per student)
+// =============================================================================
+
+export function useStudentAttendance(studentId: string | undefined) {
+  return useQuery({
+    queryKey: ["attendance", studentId],
+    queryFn: async () => {
+      if (!studentId) return [];
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("*, scheduled_classes!inner(scheduled_date, start_time, end_time, enrollment_id)")
+        .eq("student_id", studentId)
+        .order("marked_at", { ascending: false });
+      if (error) throw error;
+      return data as Array<{
+        id: string;
+        result: string;
+        marked_at: string;
+        notes: string | null;
+        scheduled_classes: {
+          scheduled_date: string;
+          start_time: string;
+          end_time: string;
+          enrollment_id: string;
+        };
+      }>;
+    },
+    enabled: !!studentId,
+  });
+}
+
 export function useClassSlots(enrollmentId: string | undefined) {
   return useQuery({
     queryKey: ["class_slots", enrollmentId],
