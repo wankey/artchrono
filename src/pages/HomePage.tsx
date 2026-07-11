@@ -1,9 +1,11 @@
 // 今日课程 + 出勤标记
 
+import { useState, useEffect } from "react";
 import { useTodayClasses } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Check, X } from "lucide-react";
+import { Loader2, Check, X, WifiOff } from "lucide-react";
+import { enqueueOp, getPendingOps, removeOp, updateOpStatus, isOnline } from "@/lib/offline";
 
 const STATUS_LABELS: Record<string, string> = {
   scheduled: "待上课",
@@ -16,12 +18,71 @@ const STATUS_LABELS: Record<string, string> = {
 export default function HomePage() {
   const { data: classes, isLoading, error } = useTodayClasses();
   const qc = useQueryClient();
+  const [offlineQueueCount, setOfflineQueueCount] = useState(0);
+  const [online, setOnline] = useState(isOnline());
   const today = new Date().toLocaleDateString("zh-CN", {
     year: "numeric", month: "long", day: "numeric", weekday: "long",
   });
 
+  // 监听在线状态
+  useEffect(() => {
+    const onOnline = () => { setOnline(true); replayQueue(); };
+    const onOffline = () => setOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    // 定时检查
+    const interval = setInterval(() => setOnline(isOnline()), 30000);
+    // 启动时检查队列
+    refreshQueueCount();
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const refreshQueueCount = async () => {
+    const ops = await getPendingOps();
+    setOfflineQueueCount(ops.filter(o => o.status === "pending" || o.status === "in_flight").length);
+  };
+
+  const replayQueue = async () => {
+    const ops = await getPendingOps();
+    for (const op of ops) {
+      if (op.status === "completed") continue;
+      if (op.retry_count >= 5) continue;
+      try {
+        await updateOpStatus(op.op_id, "in_flight");
+        if (op.op_type === "attendance") {
+          await supabase.rpc("mark_attendance", {
+            p_client_op_id: op.op_id,
+            p_scheduled_class_id: op.payload.scheduled_class_id,
+            p_result: op.payload.result,
+          });
+        }
+        await removeOp(op.op_id);
+      } catch (e: any) {
+        await updateOpStatus(op.op_id, "failed", e?.message);
+      }
+    }
+    await refreshQueueCount();
+    qc.invalidateQueries();
+  };
+
   const handleMark = async (scheduledClassId: string, result: string) => {
     const clientOpId = crypto.randomUUID();
+    if (!online) {
+      await enqueueOp({
+        op_id: clientOpId,
+        op_type: "attendance",
+        payload: { scheduled_class_id: scheduledClassId, result },
+        created_at: Date.now(),
+      });
+      await refreshQueueCount();
+      // 乐观更新本地缓存
+      qc.invalidateQueries({ queryKey: ["today_classes"] });
+      return;
+    }
     const { error: rpcErr } = await supabase.rpc("mark_attendance", {
       p_client_op_id: clientOpId,
       p_scheduled_class_id: scheduledClassId,
@@ -40,6 +101,19 @@ export default function HomePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      {/* 离线/队列状态横幅 */}
+      {(!online || offlineQueueCount > 0) && (
+        <div className="mb-4 px-4 py-2 rounded flex items-center gap-2 text-sm font-medium" style={{
+          background: !online ? "#FEF3C7" : "#DBEAFE",
+          color: !online ? "#92400E" : "#1E40AF",
+        }}>
+          {!online && <><WifiOff className="w-4 h-4" /> 离线模式</>}
+          {offlineQueueCount > 0 && <> · {offlineQueueCount} 个操作待同步</>}
+          {online && offlineQueueCount > 0 && (
+            <button onClick={replayQueue} className="ml-auto underline">立即同步</button>
+          )}
+        </div>
+      )}
       <h2 className="text-2xl font-bold text-gray-900 mb-6">{today}</h2>
 
       {error ? (
