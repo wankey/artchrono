@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { formatDateISO } from "@/lib/utils";
 
 // =============================================================================
 // Students
@@ -83,7 +84,7 @@ export function useExamLevels(courseId: string | undefined) {
 // =============================================================================
 
 export function useTodayClasses() {
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Shanghai" }); // YYYY-MM-DD
+  const today = formatDateISO();
   return useQuery({
     queryKey: ["today_classes", today],
     queryFn: async () => {
@@ -112,8 +113,7 @@ function getWeekBounds() {
   monday.setDate(now.getDate() + diffToMon);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString("en-CA");
-  return { monday: fmt(monday), sunday: fmt(sunday) };
+  return { monday: formatDateISO(monday), sunday: formatDateISO(sunday) };
 }
 
 export function useWeekClasses() {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTodayClasses, useWeekClasses, useLowBalanceEnrollments } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatDateISO } from "@/lib/utils";
 import { Loader2, Check, X, WifiOff, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { enqueueOp, getPendingOps, removeOp, updateOpStatus, isOnline } from "@/lib/offline";
 import { Button } from "@/components/ui/button";
@@ -275,13 +276,13 @@ function WeekView({ onSelectStudent }: { onSelectStudent?: (id: string) => void 
 
   if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
-  const todayStr = new Date().toLocaleDateString("en-CA");
+  const todayStr = formatDateISO();
 
   return (
     <div className="overflow-x-auto -mx-4 px-4">
       <div className="flex gap-3 min-w-[700px]">
         {days.map((day, i) => {
-          const dateStr = day.toLocaleDateString("en-CA");
+          const dateStr = formatDateISO(day);
           const isToday = dateStr === todayStr;
           const classes = byDate.get(dateStr) ?? [];
 
