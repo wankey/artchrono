@@ -139,6 +139,7 @@ function EnrollmentCard({ enrollment, studentId }: any) {
   const [location, setLocation] = useState("");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [duration, setDuration] = useState(60);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
   const createSlot = useCreateClassSlot();
   const { data: slots } = useClassSlots(enrollment.id);
   const qc = useQueryClient();
@@ -169,9 +170,18 @@ function EnrollmentCard({ enrollment, studentId }: any) {
     setShowSlotForm(false);
   };
 
-  // 结束当前报名
+  // 结束当前报名（余额>0 时弹确认框）
+  const handleEndClick = () => {
+    if (enrollment.classes_remaining > 0) {
+      setShowEndConfirm(true);
+    } else {
+      handleComplete();
+    }
+  };
+
   const handleComplete = async () => {
     await supabase.from("enrollments").update({ status: "completed", completed_at: new Date().toISOString().slice(0, 10) }).eq("id", enrollment.id);
+    setShowEndConfirm(false);
     qc.invalidateQueries({ queryKey: ["enrollments"] });
   };
 
@@ -197,12 +207,30 @@ function EnrollmentCard({ enrollment, studentId }: any) {
         </div>
         <div className="flex gap-2">
           <button onClick={() => setShowSlotForm(!showSlotForm)} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><Plus className="w-3.5 h-3.5" />排课</button>
-          <button onClick={handleComplete} className="text-sm text-orange-600 hover:underline">结束</button>
+          <button onClick={handleEndClick} className="text-sm text-orange-600 hover:underline">结束</button>
           {!isMaxLevel && (
             <button onClick={() => setShowUpgrade(!showUpgrade)} className="text-sm text-green-600 hover:underline">升级</button>
           )}
         </div>
       </div>
+
+      {/* 结束确认（余额 > 0 时弹） */}
+      {showEndConfirm && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-3">
+          <p className="text-sm text-orange-800 font-medium mb-1">确认结束报名？</p>
+          <p className="text-sm text-orange-700">
+            该报名还有 <strong>{enrollment.classes_remaining}</strong> 节未上完，
+            需退款约 <strong>¥{((enrollment.classes_remaining * (enrollment.exam_levels?.price_cents ?? 0)) / 100).toFixed(0)}</strong>
+            {enrollment.exam_levels?.price_cents != null && enrollment.exam_levels.price_cents > 0
+              ? `（¥${(enrollment.exam_levels.price_cents / 100).toFixed(0)}/节 × ${enrollment.classes_remaining} 节）`
+              : ""}。
+          </p>
+          <div className="flex gap-2 mt-3">
+            <button onClick={handleComplete} className="bg-orange-600 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-orange-700">确认结束</button>
+            <button onClick={() => setShowEndConfirm(false)} className="text-gray-600 px-4 py-1.5 rounded text-sm border hover:bg-gray-50">取消</button>
+          </div>
+        </div>
+      )}
 
       {/* 升级到下一级 */}
       {showUpgrade && (
