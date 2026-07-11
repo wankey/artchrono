@@ -6,6 +6,13 @@ import { useCreateEnrollment, useCreateClassSlot } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Loader2, CreditCard } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
@@ -16,13 +23,13 @@ export default function StudentDetailPage({ studentId, onBack }: { studentId: st
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="text-gray-500 hover:text-gray-700"><ArrowLeft className="w-5 h-5" /></button>
+        <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="w-5 h-5" /></Button>
         <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${
-          student.status === "graduated" ? "bg-gray-100 text-gray-600" :
-          student.status === "paused" ? "bg-yellow-100 text-yellow-700" :
-          "bg-green-100 text-green-700"
-        }`}>{student.status === "graduated" ? "已毕业" : student.status === "paused" ? "暂停" : "在读"}</span>
+        <Badge variant={
+          student.status === "graduated" ? "secondary" :
+          student.status === "paused" ? "outline" :
+          "default"
+        }>{student.status === "graduated" ? "已毕业" : student.status === "paused" ? "暂停" : "在读"}</Badge>
       </div>
       <div className="flex gap-0 border-b mb-6">
         <TabButton label="报名与课位" active={tab === "enrollments"} onClick={() => setTab("enrollments")} />
@@ -35,12 +42,12 @@ export default function StudentDetailPage({ studentId, onBack }: { studentId: st
 }
 
 function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return <button onClick={onClick} className={`px-4 py-2 text-sm font-medium border-b-2 ${active ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}>{label}</button>;
+  return <Button variant="ghost" onClick={onClick} className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none ${active ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}>{label}</Button>;
 }
 
 function InfoTab({ student }: any) {
   return (
-    <div className="bg-white rounded-lg shadow p-6 space-y-3">
+    <Card><CardContent className="p-6 space-y-3">
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div><span className="text-gray-500">姓名：</span>{student.name}</div>
         <div><span className="text-gray-500">家长：</span>{student.parent_name || "—"}</div>
@@ -49,7 +56,8 @@ function InfoTab({ student }: any) {
         <div><span className="text-gray-500">入学：</span>{student.enrolled_at || "—"}</div>
         <div><span className="text-gray-500">备注：</span>{student.notes || "—"}</div>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -69,9 +77,9 @@ function EnrollmentsTab({ student }: { student: any }) {
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">报名</h3>
         <div className="flex gap-2">
-          <button onClick={() => setShowAdd(!showAdd)} className="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"><Plus className="w-3.5 h-3.5" />新建报名</button>
+          <Button size="sm" onClick={() => setShowAdd(!showAdd)}><Plus className="w-3.5 h-3.5" />新建报名</Button>
           {student.status !== "graduated" && (
-            <button onClick={handleGraduate} className="flex items-center gap-1 text-sm bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">毕业</button>
+            <Button size="sm" variant="secondary" onClick={handleGraduate}>毕业</Button>
           )}
         </div>
       </div>
@@ -130,22 +138,25 @@ function PaymentForm({ enrollment, onDone }: { enrollment: any; onDone: () => vo
     <div className="bg-blue-50 rounded-lg p-3 mb-3 space-y-2">
       <div className="text-sm font-medium text-blue-900">录入付款</div>
       <div className="grid grid-cols-4 gap-2">
-        <div><label className="block text-xs text-gray-600 mb-1">节数</label><input type="number" min={1} className="w-full px-2 py-1 border rounded text-sm" value={classesPaid} onChange={e => setClassesPaid(parseInt(e.target.value)||0)} /></div>
-        <div><label className="block text-xs text-gray-600 mb-1">金额（元）</label><input className="w-full px-2 py-1 border rounded text-sm" value={amountYuan} onChange={e => setAmountYuan(e.target.value)} /></div>
-        <div><label className="block text-xs text-gray-600 mb-1">方式</label>
-          <select className="w-full px-2 py-1 border rounded text-sm" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
-            <option value="wechat">微信</option>
-            <option value="alipay">支付宝</option>
-            <option value="cash">现金</option>
-            <option value="bank">银行</option>
-          </select>
+        <div><Label className="text-xs text-gray-600">节数</Label><Input type="number" min={1} className="h-8 text-sm" value={classesPaid} onChange={e => setClassesPaid(parseInt(e.target.value)||0)} /></div>
+        <div><Label className="text-xs text-gray-600">金额（元）</Label><Input className="h-8 text-sm" value={amountYuan} onChange={e => setAmountYuan(e.target.value)} /></div>
+        <div><Label className="text-xs text-gray-600">方式</Label>
+          <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="wechat">微信</SelectItem>
+              <SelectItem value="alipay">支付宝</SelectItem>
+              <SelectItem value="cash">现金</SelectItem>
+              <SelectItem value="bank">银行</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-end gap-2">
-          <button onClick={handleSubmit} disabled={loading} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{loading ? "..." : "确认"}</button>
-          <button onClick={onDone} className="text-gray-600 px-3 py-1 rounded text-sm border hover:bg-gray-50">取消</button>
+          <Button size="sm" onClick={handleSubmit} disabled={loading}>{loading ? "..." : "确认"}</Button>
+          <Button size="sm" variant="outline" onClick={onDone}>取消</Button>
         </div>
       </div>
-      {error && <div className="text-red-600 text-xs bg-red-50 px-2 py-1 rounded">{error}</div>}
+      {error && <Alert variant="destructive" className="py-1"><AlertDescription className="text-xs">{error}</AlertDescription></Alert>}
     </div>
   );
 }
@@ -186,15 +197,15 @@ function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefi
   return (
     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><label className="block text-xs text-gray-600 mb-1">课程 *</label><select className="w-full px-2 py-1.5 border rounded text-sm" value={courseId} onChange={e => { setCourseId(e.target.value); setLevelId(""); }}><option value="">选课程</option>{courses?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-        <div><label className="block text-xs text-gray-600 mb-1">等级 *</label><select className="w-full px-2 py-1.5 border rounded text-sm" value={levelId} onChange={e => setLevelId(e.target.value)} disabled={!courseId}><option value="">选等级</option>{levels?.map((l: any) => <option key={l.id} value={l.id}>{l.level_name || `第 ${l.level_number} 级`} (¥{(l.price_cents/100).toFixed(0)}/节)</option>)}</select></div>
-        <div><label className="block text-xs text-gray-600 mb-1">付款节数</label><input type="number" min={0} className="w-full px-2 py-1.5 border rounded text-sm" value={classesPaid} onChange={e => setClassesPaid(parseInt(e.target.value)||0)} /></div>
-        <div><label className="block text-xs text-gray-600 mb-1">付款金额（元）</label><input type="text" className="w-full px-2 py-1.5 border rounded text-sm" value={amountYuan} onChange={e => setAmountYuan(e.target.value)} /></div>
+        <div><Label className="text-xs text-gray-600">课程 *</Label><select className="w-full px-2 py-1.5 border rounded text-sm h-9" value={courseId} onChange={e => { setCourseId(e.target.value); setLevelId(""); }}><option value="">选课程</option>{courses?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+        <div><Label className="text-xs text-gray-600">等级 *</Label><select className="w-full px-2 py-1.5 border rounded text-sm h-9" value={levelId} onChange={e => setLevelId(e.target.value)} disabled={!courseId}><option value="">选等级</option>{levels?.map((l: any) => <option key={l.id} value={l.id}>{l.level_name || `第 ${l.level_number} 级`} (¥{(l.price_cents/100).toFixed(0)}/节)</option>)}</select></div>
+        <div><Label className="text-xs text-gray-600">付款节数</Label><Input type="number" min={0} className="h-9 text-sm" value={classesPaid} onChange={e => setClassesPaid(parseInt(e.target.value)||0)} /></div>
+        <div><Label className="text-xs text-gray-600">付款金额（元）</Label><Input className="h-9 text-sm" value={amountYuan} onChange={e => setAmountYuan(e.target.value)} /></div>
       </div>
-      {error && <div className="text-red-600 text-sm bg-red-50 px-3 py-1 rounded">{error}</div>}
+      {error && <Alert variant="destructive" className="py-1"><AlertDescription className="text-xs">{error}</AlertDescription></Alert>}
       <div className="flex gap-2">
-        <button onClick={handleSubmit} disabled={createEnrollment.isPending || !courseId || !levelId} className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{createEnrollment.isPending ? "保存中..." : "保存"}</button>
-        <button onClick={() => onCancel ? onCancel() : onDone()} className="text-gray-600 px-4 py-1.5 rounded text-sm border hover:bg-gray-50">取消</button>
+        <Button size="sm" onClick={handleSubmit} disabled={createEnrollment.isPending || !courseId || !levelId}>{createEnrollment.isPending ? "保存中..." : "保存"}</Button>
+        <Button size="sm" variant="outline" onClick={() => onCancel ? onCancel() : onDone()}>取消</Button>
       </div>
     </div>
   );
@@ -258,7 +269,7 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
   const isMaxLevel = (enrollment.exam_levels?.level_number ?? 0) >= maxLevelNum;
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
+    <Card><CardContent className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h4 className="font-semibold text-gray-900">
@@ -272,31 +283,33 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
           </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={onTogglePay} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><CreditCard className="w-3.5 h-3.5" />付款</button>
-          <button onClick={() => setShowSlotForm(!showSlotForm)} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><Plus className="w-3.5 h-3.5" />排课</button>
-          <button onClick={handleEndClick} className="text-sm text-orange-600 hover:underline">结束</button>
+          <Button variant="link" size="sm" onClick={onTogglePay}><CreditCard className="w-3.5 h-3.5" />付款</Button>
+          <Button variant="link" size="sm" onClick={() => setShowSlotForm(!showSlotForm)}><Plus className="w-3.5 h-3.5" />排课</Button>
+          <Button variant="link" size="sm" className="text-orange-600" onClick={handleEndClick}>结束</Button>
           {!isMaxLevel && (
-            <button onClick={() => setShowUpgrade(!showUpgrade)} className="text-sm text-green-600 hover:underline">升级</button>
+            <Button variant="link" size="sm" className="text-green-600" onClick={() => setShowUpgrade(!showUpgrade)}>升级</Button>
           )}
         </div>
       </div>
 
       {/* 结束确认（余额 > 0 时弹） */}
       {showEndConfirm && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-3">
-          <p className="text-sm text-orange-800 font-medium mb-1">确认结束报名？</p>
-          <p className="text-sm text-orange-700">
-            该报名还有 <strong>{enrollment.classes_remaining}</strong> 节未上完，
-            需退款约 <strong>¥{((enrollment.classes_remaining * (enrollment.exam_levels?.price_cents ?? 0)) / 100).toFixed(0)}</strong>
-            {enrollment.exam_levels?.price_cents != null && enrollment.exam_levels.price_cents > 0
-              ? `（¥${(enrollment.exam_levels.price_cents / 100).toFixed(0)}/节 × ${enrollment.classes_remaining} 节）`
-              : ""}。
-          </p>
-          <div className="flex gap-2 mt-3">
-            <button onClick={handleComplete} className="bg-orange-600 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-orange-700">确认结束</button>
-            <button onClick={() => setShowEndConfirm(false)} className="text-gray-600 px-4 py-1.5 rounded text-sm border hover:bg-gray-50">取消</button>
-          </div>
-        </div>
+        <Alert className="border-orange-200 bg-orange-50 mb-3">
+          <AlertDescription>
+            <p className="text-sm text-orange-800 font-medium mb-1">确认结束报名？</p>
+            <p className="text-sm text-orange-700">
+              该报名还有 <strong>{enrollment.classes_remaining}</strong> 节未上完，
+              需退款约 <strong>¥{((enrollment.classes_remaining * (enrollment.exam_levels?.price_cents ?? 0)) / 100).toFixed(0)}</strong>
+              {enrollment.exam_levels?.price_cents != null && enrollment.exam_levels.price_cents > 0
+                ? `（¥${(enrollment.exam_levels.price_cents / 100).toFixed(0)}/节 × ${enrollment.classes_remaining} 节）`
+                : ""}。
+            </p>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" className="bg-orange-600 hover:bg-orange-700" onClick={handleComplete}>确认结束</Button>
+              <Button size="sm" variant="outline" onClick={() => setShowEndConfirm(false)}>取消</Button>
+            </div>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* 付款录入（嵌入在报名卡内） */}
@@ -341,16 +354,16 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
 
       {/* 排课表单 */}
       {showSlotForm && (
-        <div className="bg-gray-50 rounded p-3 mb-3 grid grid-cols-4 gap-2">
-          <div><label className="block text-xs text-gray-600 mb-1">星期</label><select className="w-full px-2 py-1.5 border rounded text-sm" value={weekday} onChange={e => setWeekday(parseInt(e.target.value))}>{WEEKDAY_LABELS.map((l, i) => <option key={i} value={i}>{l}</option>)}</select></div>
-          <div><label className="block text-xs text-gray-600 mb-1">开始</label><input type="time" className="w-full px-2 py-1.5 border rounded text-sm" value={startTime} onChange={e => handleStartTimeChange(e.target.value)} /></div>
-          <div><label className="block text-xs text-gray-600 mb-1">结束（{duration}min）</label><input type="time" className="w-full px-2 py-1.5 border rounded text-sm" value={endTime} onChange={e => setEndTime(e.target.value)} /></div>
-          <div><label className="block text-xs text-gray-600 mb-1">教室</label><input className="w-full px-2 py-1.5 border rounded text-sm" value={location} onChange={e => setLocation(e.target.value)} placeholder="选填" /></div>
+        <Card className="mb-3"><CardContent className="p-3 grid grid-cols-4 gap-2">
+          <div><Label className="text-xs text-gray-600">星期</Label><select className="w-full px-2 py-1.5 border rounded text-sm h-9" value={weekday} onChange={e => setWeekday(parseInt(e.target.value))}>{WEEKDAY_LABELS.map((l, i) => <option key={i} value={i}>{l}</option>)}</select></div>
+          <div><Label className="text-xs text-gray-600">开始</Label><Input type="time" className="h-9 text-sm" value={startTime} onChange={e => handleStartTimeChange(e.target.value)} /></div>
+          <div><Label className="text-xs text-gray-600">结束（{duration}min）</Label><Input type="time" className="h-9 text-sm" value={endTime} onChange={e => setEndTime(e.target.value)} /></div>
+          <div><Label className="text-xs text-gray-600">教室</Label><Input className="h-9 text-sm" value={location} onChange={e => setLocation(e.target.value)} placeholder="选填" /></div>
           <div className="col-span-4 flex gap-2 mt-1">
-            <button onClick={handleAddSlot} disabled={createSlot.isPending} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{createSlot.isPending ? "保存中..." : "保存"}</button>
-            <button onClick={() => setShowSlotForm(false)} className="text-gray-600 px-3 py-1 rounded text-sm border hover:bg-gray-50">取消</button>
+            <Button size="sm" onClick={handleAddSlot} disabled={createSlot.isPending}>{createSlot.isPending ? "保存中..." : "保存"}</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowSlotForm(false)}>取消</Button>
           </div>
-        </div>
+        </CardContent></Card>
       )}
 
       {slots?.length === 0 && !showSlotForm && <p className="text-sm text-gray-400">还没有课位，点击"排课"添加</p>}
@@ -360,6 +373,6 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
           <span className="text-gray-400">{slot.location || ""}</span>
         </div>
       ))}
-    </div>
+      </CardContent></Card>
   );
 }
