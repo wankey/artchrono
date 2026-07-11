@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useStudent, useEnrollments, useCourses, useExamLevels, useClassSlots, useStudentPayments, useStudentAttendance } from "@/lib/queries";
-import { useCreateEnrollment, useCreateClassSlot } from "@/lib/mutations";
+import { useCreateEnrollment, useCreateClassSlot, useUpdateStudent } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Loader2, CreditCard } from "lucide-react";
@@ -50,8 +50,60 @@ function TabButton({ label, active, onClick }: { label: string; active: boolean;
 }
 
 function InfoTab({ student }: any) {
+  const updateStudent = useUpdateStudent();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(student.name);
+  const [parentName, setParentName] = useState(student.parent_name ?? "");
+  const [parentPhone, setParentPhone] = useState(student.parent_phone ?? "");
+  const [parentWechat, setParentWechat] = useState(student.parent_wechat ?? "");
+  const [notes, setNotes] = useState(student.notes ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateStudent.mutateAsync({ id: student.id, name, parent_name: parentName || undefined, parent_phone: parentPhone || undefined, parent_wechat: parentWechat || undefined, notes: notes || undefined });
+      setEditing(false);
+    } catch (e: any) {
+      alert("保存失败：" + (e?.message ?? String(e)));
+    }
+    setSaving(false);
+  };
+
+  const handleCancel = () => {
+    setName(student.name);
+    setParentName(student.parent_name ?? "");
+    setParentPhone(student.parent_phone ?? "");
+    setParentWechat(student.parent_wechat ?? "");
+    setNotes(student.notes ?? "");
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <Card><CardContent className="p-6 space-y-4">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div><Label className="text-xs text-gray-500">姓名</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
+          <div><Label className="text-xs text-gray-500">家长</Label><Input value={parentName} onChange={e => setParentName(e.target.value)} /></div>
+          <div><Label className="text-xs text-gray-500">电话</Label><Input value={parentPhone} onChange={e => setParentPhone(e.target.value)} /></div>
+          <div><Label className="text-xs text-gray-500">微信</Label><Input value={parentWechat} onChange={e => setParentWechat(e.target.value)} /></div>
+          <div><Label className="text-xs text-gray-500">入学</Label><div className="py-2 text-gray-600">{student.enrolled_at || "—"}</div></div>
+          <div><Label className="text-xs text-gray-500">备注</Label><Input value={notes} onChange={e => setNotes(e.target.value)} /></div>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSave} disabled={saving || !name.trim()}>{saving ? "保存中..." : "保存"}</Button>
+          <Button size="sm" variant="outline" onClick={handleCancel}>取消</Button>
+        </div>
+      </CardContent></Card>
+    );
+  }
+
   return (
     <Card><CardContent className="p-6 space-y-3">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-gray-900">学生信息</h3>
+        <Button size="sm" variant="outline" onClick={() => setEditing(true)}>编辑</Button>
+      </div>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div><span className="text-gray-500">姓名：</span>{student.name}</div>
         <div><span className="text-gray-500">家长：</span>{student.parent_name || "—"}</div>
@@ -166,6 +218,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
             <thead>
               <tr className="border-b text-gray-500 text-xs">
                 <th className="text-left px-4 py-2 font-medium">日期</th>
+                <th className="text-left px-4 py-2 font-medium">课程</th>
                 <th className="text-left px-4 py-2 font-medium">时间</th>
                 <th className="text-center px-4 py-2 font-medium">状态</th>
               </tr>
@@ -177,6 +230,9 @@ function AttendanceTab({ studentId }: { studentId: string }) {
                   <tr key={r.id} className="border-b last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900">
                       {new Date(r.scheduled_classes?.scheduled_date ?? r.marked_at).toLocaleDateString("zh-CN")}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {(r as any).enrollments?.courses?.name ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {r.scheduled_classes?.start_time?.slice(0, 5) ?? "—"}

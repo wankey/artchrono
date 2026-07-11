@@ -41,6 +41,7 @@ function RecordPayment() {
   const [classesPaid, setClassesPaid] = useState(10);
   const [amountYuan, setAmountYuan] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("wechat");
+  const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,10 +69,12 @@ function RecordPayment() {
         p_classes_paid: classesPaid,
         p_amount_cents: Math.round(parseFloat(amountYuan) * 100),
         p_payment_method: paymentMethod,
+        p_notes: notes || null,
       });
       if (rpcErr) throw rpcErr;
       setSuccess(`已录 ${classesPaid} 节，¥${amountYuan}`);
       setSelectedEnrollmentId("");
+      setNotes("");
       qc.invalidateQueries({ queryKey: ["enrollments"] });
       qc.invalidateQueries({ queryKey: ["today_classes"] });
     } catch (e: any) {
@@ -165,6 +168,10 @@ function RecordPayment() {
                   </div>
                   {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
                   {success && <Alert className="border-green-200 bg-green-50 text-green-800"><AlertDescription>{success}</AlertDescription></Alert>}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-500">备注（选填）</Label>
+                    <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="暑期限时优惠 / 老生折扣 / 转介绍…" />
+                  </div>
                   <div className="flex gap-2">
                     <Button onClick={handleSubmit} disabled={loading || !selectedEnrollmentId || classesPaid <= 0}>
                       {loading ? "处理中..." : "确认收款"}
@@ -191,7 +198,7 @@ function PaymentHistory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("payments")
-        .select("paid_at, classes_paid, amount_cents, payment_method, students!inner(name), enrollments!inner(courses!inner(name), exam_levels!inner(level_number, level_name))")
+        .select("paid_at, classes_paid, amount_cents, payment_method, notes, students!inner(name), enrollments!inner(courses!inner(name), exam_levels!inner(level_number, level_name))")
         .order("paid_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -224,11 +231,12 @@ function PaymentHistory() {
                 <th className="text-right px-4 py-2 font-medium">节数</th>
                 <th className="text-right px-4 py-2 font-medium">金额</th>
                 <th className="text-center px-4 py-2 font-medium">方式</th>
+                <th className="text-left px-4 py-2 font-medium">备注</th>
               </tr>
             </thead>
             <tbody>
               {(payments ?? []).length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-12 text-gray-400">暂无付款记录</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-gray-400">暂无付款记录</td></tr>
               ) : (
                 (payments ?? []).map((p: any, i: number) => (
                   <tr key={p.id ?? i} className="border-b last:border-0 hover:bg-gray-50">
@@ -247,6 +255,7 @@ function PaymentHistory() {
                     <td className="px-4 py-3 text-center text-gray-500">
                       {p.payment_method ? ({ wechat: "微信", alipay: "支付宝", cash: "现金", bank: "银行" } as Record<string, string>)[p.payment_method] ?? p.payment_method : "—"}
                     </td>
+                    <td className="px-4 py-3 text-gray-500 max-w-[180px] truncate text-sm" title={p.notes ?? ""}>{p.notes || "—"}</td>
                   </tr>
                 ))
               )}

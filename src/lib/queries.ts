@@ -197,11 +197,11 @@ export function useStudentAttendance(studentId: string | undefined) {
       if (!studentId) return [];
       const { data, error } = await supabase
         .from("attendance")
-        .select("*, scheduled_classes!inner(scheduled_date, start_time, end_time, enrollment_id)")
+        .select("*, scheduled_classes!inner(scheduled_date, start_time, end_time), enrollments!inner(courses!inner(name))")
         .eq("student_id", studentId)
         .order("marked_at", { ascending: false });
       if (error) throw error;
-      return data as Array<{
+      return (data ?? []) as unknown as Array<{
         id: string;
         result: string;
         marked_at: string;
@@ -210,7 +210,9 @@ export function useStudentAttendance(studentId: string | undefined) {
           scheduled_date: string;
           start_time: string;
           end_time: string;
-          enrollment_id: string;
+        };
+        enrollments: {
+          courses: { name: string };
         };
       }>;
     },
