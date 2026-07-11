@@ -96,8 +96,8 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
           filtered.map((s: any) => {
             const enrollments = (allEnrollments ?? []).filter((e: any) => e.student_id === s.id);
             return (
-              <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 cursor-pointer relative"
-                   onClick={() => onSelectStudent?.(s.id)}>
+              <div key={s.id} className="bg-white rounded-lg shadow p-4 hover:bg-gray-50 relative">
+                <div className="cursor-pointer" onClick={() => onSelectStudent?.(s.id)}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -129,20 +129,26 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
                     )}
                   </div>
                   <button
+                    type="button"
                     onClick={async (e) => {
+                      e.preventDefault();
                       e.stopPropagation();
-                      if (!confirm(`确认删除学生「${s.name}」？\n（有未来课程会拒绝）`)) return;
+                      console.log("[Delete student] clicked", s.id);
+                      const ok = window.confirm(`确认删除学生「${s.name}」？\n（有未来课程会拒绝）`);
+                      if (!ok) return;
                       try {
                         await deleteStudent.mutateAsync(s.id);
                       } catch (err: any) {
-                        alert(`删除失败：${err.message}`);
+                        console.error("[Delete student] failed:", err);
+                        window.alert(`删除失败：${err.message}`);
                       }
                     }}
-                    className="ml-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                    className="ml-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded z-10 relative"
                     title="删除学生"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 pointer-events-none" />
                   </button>
+                </div>
                 </div>
               </div>
             );
