@@ -209,19 +209,15 @@ SET search_path = public
 AS $$
 DECLARE
   v_enrollment RECORD;
-  v_slots RECORD[];
-  v_slot RECORD;
   v_target_count INT;
   v_today DATE;
   v_taken_dates DATE[];
   v_existing_count INT;
   v_diff INT;
-  v_to_insert RECORD[];
-  v_cursor_date DATE;
   v_slot_idx INT;
-  v_date_str TEXT;
   v_inserted INT := 0;
   v_deleted INT := 0;
+  v_slot_count INT;
 BEGIN
   -- 1. 取 enrollment
   SELECT * INTO v_enrollment
@@ -241,14 +237,12 @@ BEGIN
     RETURN 0;  -- non-active 不需要生成
   END IF;
 
-  -- 3. 取所有 active class_slots（按 weekday 排序，轮询有序）
-  SELECT ARRAY_AGG(s.* ORDER BY s.weekday, s.start_time)
-  INTO v_slots
-  FROM class_slots s
-  WHERE s.enrollment_id = p_enrollment_id
-    AND s.active = TRUE;
+  -- 3. 检查是否有 active class_slots
+  SELECT COUNT(*) INTO v_slot_count
+  FROM class_slots
+  WHERE enrollment_id = p_enrollment_id AND active = TRUE;
 
-  IF v_slots IS NULL OR ARRAY_LENGTH(v_slots, 1) = 0 THEN
+  IF v_slot_count = 0 THEN
     RETURN 0;  -- 没有课位，无须生成
   END IF;
 
@@ -271,82 +265,62 @@ BEGIN
     RETURN 0;
   END IF;
 
-  -- 6. 差值 > 0：补齐
+  -- 6. 差值 > 0：补齐（多 slot 轮询）
   IF v_diff > 0 THEN
-    -- 为每个 slot 初始化游标到下一个 weekday 日期
-    -- 简化：直接用一个 slot 索引轮询
-    v_slot_idx := 0;
-
-    -- 展开所有候选日期（每个 slot 未来 12 周的每个 weekday）
-    FOR v_slot IN SELECT UNNEST(v_slots) LOOP
-      v_cursor_date := v_today;
-      -- 找到下一个 weekday
-      WHILE EXTRACT(DOW FROM v_cursor_date) != v_slot.weekday LOOP
-        v_cursor_date := v_cursor_date + 1;
-      END LOOP;
-      -- 在 taken set 中记录这个 slot 的起始日期
-      -- 用一个临时数组存储每个 slot 的游标
-      PERFORM 1;  -- placeholder; 实际逻辑在下面
-    END LOOP;
-
-    -- 实际生成：轮询各 slot 直到凑够 v_diff 个
-    -- 用一个临时表记录每个 slot 的当前游标
-    CREATE TEMP TABLE IF NOT EXISTS _slot_cursors (
+    -- 用临时表记录每个 slot 的当前游标（避免 RECORD[] 伪类型问题）
+    CREATE TEMP TABLE _slot_cursors (
       slot_id UUID PRIMARY KEY,
+      start_time TIME NOT NULL,
+      end_time TIME NOT NULL,
       next_date DATE NOT NULL
-    ) ON COMMIT DROP;
+    );
 
-    -- 初始化每个 slot 的游标
-    INSERT INTO _slot_cursors (slot_id, next_date)
+    -- 初始化每个 slot 的游标到下一个 weekday 日期
+    INSERT INTO _slot_cursors (slot_id, start_time, end_time, next_date)
     SELECT
-      s.id,
-      v_today + ((7 + s.weekday - EXTRACT(DOW FROM v_today)::INT) % 7)
-    FROM UNNEST(v_slots) AS s;
+      s.id, s.start_time, s.end_time,
+      v_today + ((7 + s.weekday - (EXTRACT(DOW FROM v_today)::INT)) % 7)
+    FROM class_slots s
+    WHERE s.enrollment_id = p_enrollment_id AND s.active = TRUE
+    ORDER BY s.weekday, s.start_time;
 
-    v_slot_idx := 0;
-    WHILE v_slot_idx < v_diff LOOP
-      -- 轮询：取第 v_slot_idx % slot_count 个 slot
+    -- 轮询每个 slot 的游标
+    FOR v_slot_idx IN 0..(v_diff - 1) LOOP
       DECLARE
-        v_cur RECORD;
+        v_cur_slot_id UUID;
+        v_cur_start_time TIME;
+        v_cur_end_time TIME;
+        v_cur_date DATE;
+        v_date_taken BOOLEAN;
       BEGIN
-        SELECT sc.slot_id, sc.next_date, s.start_time, s.end_time, s.id AS slot_id_real
-        INTO v_cur
+        -- 轮询：取第 (v_slot_idx % slot_count) 个 slot
+        SELECT sc.slot_id, sc.start_time, sc.end_time, sc.next_date
+        INTO v_cur_slot_id, v_cur_start_time, v_cur_end_time, v_cur_date
         FROM _slot_cursors sc
-        JOIN class_slots s ON s.id = sc.slot_id
         ORDER BY sc.slot_id
-        OFFSET (v_slot_idx % (SELECT COUNT(*) FROM _slot_cursors))
+        OFFSET (v_slot_idx % v_slot_count)
         LIMIT 1;
 
-        v_date_str := v_cur.next_date::TEXT;
-
         -- 检查这个日期是否已在 taken set
-        IF v_date_str != ALL(v_taken_dates::TEXT[]) OR v_taken_dates IS NULL THEN
-          -- 插入
+        v_date_taken := v_cur_date = ANY(COALESCE(v_taken_dates, ARRAY[]::DATE[]));
+
+        IF NOT v_date_taken THEN
           INSERT INTO scheduled_classes (
             class_slot_id, student_id, enrollment_id, teacher_id,
             scheduled_date, start_time, end_time, status
           ) VALUES (
-            v_cur.slot_id_real,
-            v_enrollment.student_id,
-            p_enrollment_id,
-            v_enrollment.teacher_id,
-            v_cur.next_date,
-            v_cur.start_time,
-            v_cur.end_time,
-            'scheduled'
+            v_cur_slot_id, v_enrollment.student_id, p_enrollment_id, v_enrollment.teacher_id,
+            v_cur_date, v_cur_start_time, v_cur_end_time, 'scheduled'
           );
           v_inserted := v_inserted + 1;
-          -- 更新 taken set（追加到这个 array）
-          v_taken_dates := ARRAY_APPEND(COALESCE(v_taken_dates, ARRAY[]::DATE[]), v_cur.next_date);
+          v_taken_dates := ARRAY_APPEND(v_taken_dates, v_cur_date);
         END IF;
 
-        -- 推进游标到下一个 weekday
+        -- 推进这个 slot 的游标到下一个 weekday
         UPDATE _slot_cursors
         SET next_date = next_date + 7
-        WHERE slot_id = v_cur.slot_id;
+        WHERE slot_id = v_cur_slot_id;
       END;
-
-      v_slot_idx := v_slot_idx + 1;
     END LOOP;
 
     DROP TABLE _slot_cursors;
