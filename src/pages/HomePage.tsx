@@ -1,9 +1,9 @@
 // 今日课程 + 出勤标记
 
-import { useTodayClasses, useStudent } from "@/lib/queries";
+import { useTodayClasses } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Check, X, AlertTriangle } from "lucide-react";
+import { Loader2, Check, X } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   scheduled: "待上课",
@@ -22,13 +22,13 @@ export default function HomePage() {
 
   const handleMark = async (scheduledClassId: string, result: string) => {
     const clientOpId = crypto.randomUUID();
-    const { error } = await supabase.rpc("mark_attendance", {
+    const { error: rpcErr } = await supabase.rpc("mark_attendance", {
       p_client_op_id: clientOpId,
       p_scheduled_class_id: scheduledClassId,
       p_result: result,
     });
-    if (error) {
-      console.error("[Attendance] mark_attendance failed:", error);
+    if (rpcErr) {
+      console.error("[Attendance] mark_attendance failed:", rpcErr);
       return;
     }
     qc.invalidateQueries({ queryKey: ["today_classes"] });
@@ -37,86 +37,59 @@ export default function HomePage() {
   };
 
   if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
-  if (error) return <div className="text-red-600 p-4">加载失败：{String(error)}</div>;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">{today}</h2>
 
-      {/* Low balance banner */}
-      <LowBalanceBanner />
-
-      {!classes || classes.length === 0 ? (
+      {error ? (
+        <div className="bg-red-50 text-red-600 p-4 rounded">{String(error)}</div>
+      ) : !classes || classes.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <div className="text-6xl mb-4">📅</div>
           <h3 className="text-lg font-semibold text-gray-700 mb-2">今天没有排课</h3>
           <p className="text-gray-500">
-            {classes?.length === 0 ? "先去"学生管理"给已报名的学生排课吧" : ""}
+            先去「学生管理」给已报名的学生排课吧
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {classes.map((sc) => (
-            <ClassRow
-              key={sc.id}
-              scheduledClass={sc}
-              onMark={(result) => handleMark(sc.id, result)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LowBalanceBanner() {
-  const { data: enrollments } = useQueryClient().getQueryData(["enrollments"]);
-  // V1 简化：不在这里做；T10 加 TanStack Query 全局查询
-  return null;
-}
-
-function ClassRow({ scheduledClass: sc, onMark }: { scheduledClass: any; onMark: (result: string) => void }) {
-  const isDone = sc.status !== "scheduled";
-
-  return (
-    <div className={`bg-white rounded-lg shadow p-4 flex items-center justify-between ${
-      isDone ? "opacity-60" : ""
-    }`}>
-      <div className="flex items-center gap-4">
-        <div className="text-2xl font-bold text-gray-700 w-32">
-          {sc.start_time?.slice(0, 5)} - {sc.end_time?.slice(0, 5)}
-        </div>
-        <div>
-          <h4 className="font-semibold text-gray-900">
-            {sc.students?.name ?? "—"}
-            {sc.class_slots?.location ? ` · ${sc.class_slots.location}` : ""}
-          </h4>
-          <p className={`text-sm ${isDone ? "text-gray-400" : "text-green-600"}`}>
-            {STATUS_LABELS[sc.status] ?? sc.status}
-          </p>
-        </div>
-      </div>
-
-      {!isDone && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => onMark("attended")}
-            className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700"
-          >
-            <Check className="w-4 h-4" />出席
-          </button>
-          <button
-            onClick={() => onMark("no_show")}
-            className="flex items-center gap-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm hover:bg-yellow-600"
-          >
-            <X className="w-4 h-4" />缺勤
-          </button>
-          <button
-            onClick={() => onMark("cancelled")}
-            className="flex items-center gap-1 bg-gray-400 text-white px-3 py-2 rounded text-sm hover:bg-gray-500"
-          >
-            取消
-          </button>
+          {classes.map((sc) => {
+            const isDone = sc.status !== "scheduled";
+            return (
+              <div key={sc.id} className={`bg-white rounded-lg shadow p-4 flex items-center justify-between ${isDone ? "opacity-60" : ""}`}>
+                <div className="flex items-center gap-4">
+                  <div className="text-2xl font-bold text-gray-700 w-32">
+                    {sc.start_time?.slice(0, 5)} - {sc.end_time?.slice(0, 5)}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      {sc.students?.name ?? "-"}
+                    </h4>
+                    <p className={`text-sm ${isDone ? "text-gray-400" : "text-green-600"}`}>
+                      {STATUS_LABELS[sc.status] ?? sc.status}
+                    </p>
+                  </div>
+                </div>
+                {!isDone && (
+                  <div className="flex gap-2">
+                    <button onClick={() => handleMark(sc.id, "attended")}
+                      className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700">
+                      <Check className="w-4 h-4" />出席
+                    </button>
+                    <button onClick={() => handleMark(sc.id, "no_show")}
+                      className="flex items-center gap-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm hover:bg-yellow-600">
+                      <X className="w-4 h-4" />缺勤
+                    </button>
+                    <button onClick={() => handleMark(sc.id, "cancelled")}
+                      className="flex items-center gap-1 bg-gray-400 text-white px-3 py-2 rounded text-sm hover:bg-gray-500">
+                      取消
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

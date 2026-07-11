@@ -20,9 +20,9 @@ CREATE OR REPLACE FUNCTION mark_attendance(
   p_notes TEXT DEFAULT NULL
 )
 RETURNS TABLE (
-  attendance_id UUID,
-  classes_remaining INT,
-  scheduled_class_status TEXT,
+  out_attendance_id UUID,
+  out_balance INT,
+  out_status TEXT,
   was_duplicate BOOLEAN
 )
 LANGUAGE plpgsql
@@ -121,9 +121,9 @@ CREATE OR REPLACE FUNCTION record_payment(
   p_notes TEXT DEFAULT NULL
 )
 RETURNS TABLE (
-  payment_id UUID,
-  classes_remaining INT,
-  scheduled_classes_generated INT
+  out_payment_id UUID,
+  out_balance INT,
+  out_generated INT
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
