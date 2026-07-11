@@ -3,13 +3,16 @@ node_modules/
 dist/
 .DS_Store
 *.log
-.env
-.env.local
+
+# 所有 .env* 忽略，但保留 .env.example（模板）
+.env*
+!.env.example
 
 # Tauri
 src-tauri/target/
 src-tauri/gen/
 src-tauri/.cargo/
+src-tauri/.env  # ⚠️ 含 SUPABASE_SERVICE_ROLE_KEY
 
 # Supabase
 supabase/.branches/
