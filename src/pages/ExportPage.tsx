@@ -2,6 +2,8 @@
 
 import { useStudents, useEnrollments } from "@/lib/queries";
 import { Loader2, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 
 export default function ExportPage() {
@@ -41,16 +43,15 @@ export default function ExportPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">数据导出</h2>
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-600 mb-4">导出学生列表为 CSV 文件（可用 Excel / Numbers 打开）</p>
-        <button
-          onClick={handleExport}
-          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700"
-        >
-          <Download className="w-4 h-4" />
-          {done ? "已导出 ✅" : "导出 CSV"}
-        </button>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-gray-600 mb-4">导出学生列表为 CSV 文件（可用 Excel / Numbers 打开）</p>
+          <Button onClick={handleExport}>
+            <Download className="w-4 h-4" />
+            {done ? "已导出 ✅" : "导出 CSV"}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
