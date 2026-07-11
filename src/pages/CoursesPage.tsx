@@ -6,6 +6,10 @@ import { useCreateCourse, useCreateExamLevel, useDeleteCourse, useDeleteExamLeve
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
@@ -52,25 +56,24 @@ export default function CoursesPage() {
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">课程管理</h2>
-        <button onClick={() => setShowCourseForm(!showCourseForm)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700"><Plus className="w-4 h-4" />添加课程</button>
+        <Button onClick={() => setShowCourseForm(!showCourseForm)}><Plus className="w-4 h-4" />添加课程</Button>
       </div>
 
       {showCourseForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6 space-y-4">
-          <h3 className="font-semibold text-gray-900">添加课程</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">课程名 *</label>
-              <input className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="钢琴" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
-              <input className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" value={courseDesc} onChange={e => setCourseDesc(e.target.value)} placeholder="一对一教学" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">默认课时（分钟）</label>
-              <input type="number" min={15} max={240} className="w-full px-3 py-2 border rounded" value={duration} onChange={e => setDuration(parseInt(e.target.value) || 60)} /></div>
-          </div>
-          <div className="flex gap-3">
-            <button onClick={handleAddCourse} disabled={createCourse.isPending || !courseName.trim()} className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50">{createCourse.isPending ? "保存中..." : "保存"}</button>
-            <button onClick={() => setShowCourseForm(false)} className="text-gray-600 px-6 py-2 rounded border hover:bg-gray-50">取消</button>
-          </div>
-        </div>
+        <Card className="mb-6">
+          <CardContent className="p-6 space-y-4">
+            <h3 className="font-semibold text-gray-900">添加课程</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1"><Label>课程名 *</Label><Input value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="钢琴" /></div>
+              <div className="space-y-1"><Label>描述</Label><Input value={courseDesc} onChange={e => setCourseDesc(e.target.value)} placeholder="一对一教学" /></div>
+              <div className="space-y-1"><Label>默认课时（分钟）</Label><Input type="number" min={15} max={240} value={duration} onChange={e => setDuration(parseInt(e.target.value) || 60)} /></div>
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={handleAddCourse} disabled={createCourse.isPending || !courseName.trim()}>{createCourse.isPending ? "保存中..." : "保存"}</Button>
+              <Button variant="outline" onClick={() => setShowCourseForm(false)}>取消</Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="space-y-3">
@@ -94,7 +97,7 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
   const [dur, setDur] = useState(course.default_duration_minutes ?? 60);
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <Card>
       <div className="flex items-center">
         <button onClick={onToggle} className="flex-1 flex items-center justify-between px-4 py-3 hover:bg-gray-50">
           <div className="text-left">
@@ -106,7 +109,7 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
             {expanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
           </div>
         </button>
-        <button onClick={async (e) => {
+        <Button variant="ghost" size="icon" onClick={async (e) => {
           e.stopPropagation();
           if (!confirm(`确认删除课程「${course.name}」？\n（有报名会失败）`)) return;
           try {
@@ -114,9 +117,9 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
           } catch (err: any) {
             alert(`删除失败：${err.message}`);
           }
-        }} className="mr-3 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded" title="删除课程">
+        }} className="mr-3 text-red-400 hover:text-red-600 hover:bg-red-50" title="删除课程">
           <Trash2 className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
 
       {expanded && (
@@ -125,7 +128,7 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>默认课时：</span>
             {editingDuration ? (
-              <><input type="number" min={15} max={240} className="w-16 px-2 py-0.5 border rounded text-sm" value={dur} onChange={e => setDur(parseInt(e.target.value)||60)} />
+              <><Input type="number" min={15} max={240} className="w-16 h-8 inline-block" value={dur} onChange={e => setDur(parseInt(e.target.value)||60)} />
                 <button onClick={() => { onUpdateDuration(dur); setEditingDuration(false); }} className="text-blue-600 hover:underline text-xs">保存</button>
                 <button onClick={() => setEditingDuration(false)} className="text-gray-400 text-xs">取消</button></>
             ) : (
@@ -143,16 +146,16 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
                   ¥{(lvl.price_cents / 100).toFixed(0)} / 节
                   {lvl.default_duration_minutes ? ` · ${lvl.default_duration_minutes}min` : ""}
                 </span>
-                <button onClick={async () => {
+                <Button variant="ghost" size="icon" onClick={async () => {
                   if (!confirm(`删除等级「${lvl.level_name || `第${lvl.level_number}级`}」？`)) return;
                   try {
                     await deleteLevel.mutateAsync(lvl.id);
                   } catch (err: any) {
                     alert(`删除失败：${err.message}`);
                   }
-                }} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded" title="删除等级">
+                }} className="text-red-400 hover:text-red-600 hover:bg-red-50 h-8 w-8" title="删除等级">
                   <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -160,21 +163,21 @@ function CourseCard({ course, expanded, onToggle, showLevelForm, onShowLevelForm
           {showLevelForm ? (
             <div className="bg-gray-50 rounded p-3 space-y-2 mt-3">
               <div className="grid grid-cols-4 gap-2">
-                <div><label className="block text-xs text-gray-600 mb-1">等级序号</label><input type="number" min={1} className="w-full px-2 py-1 border rounded text-sm" value={levelNum} onChange={e => setLevelNum(parseInt(e.target.value)||1)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">等级名</label><input className="w-full px-2 py-1 border rounded text-sm" value={levelName} onChange={e => setLevelName(e.target.value)} placeholder="初级" /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">单节课费（元）</label><input className="w-full px-2 py-1 border rounded text-sm" value={priceYuan} onChange={e => setPriceYuan(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">课时（分，留空=默认）</label><input type="number" min={15} max={240} className="w-full px-2 py-1 border rounded text-sm" value={levelDuration ?? ""} onChange={e => setLevelDuration(e.target.value ? parseInt(e.target.value) : undefined)} placeholder={String(course.default_duration_minutes ?? 60)} /></div>
+                <div><Label className="text-xs text-gray-600">等级序号</Label><Input type="number" min={1} className="h-8 text-sm" value={levelNum} onChange={e => setLevelNum(parseInt(e.target.value)||1)} /></div>
+                <div><Label className="text-xs text-gray-600">等级名</Label><Input className="h-8 text-sm" value={levelName} onChange={e => setLevelName(e.target.value)} placeholder="初级" /></div>
+                <div><Label className="text-xs text-gray-600">单节课费（元）</Label><Input className="h-8 text-sm" value={priceYuan} onChange={e => setPriceYuan(e.target.value)} /></div>
+                <div><Label className="text-xs text-gray-600">课时（分，留空=默认）</Label><Input type="number" min={15} max={240} className="h-8 text-sm" value={levelDuration ?? ""} onChange={e => setLevelDuration(e.target.value ? parseInt(e.target.value) : undefined)} placeholder={String(course.default_duration_minutes ?? 60)} /></div>
               </div>
               <div className="flex gap-2">
-                <button onClick={onAddLevel} disabled={addingLevel} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">{addingLevel ? "保存中..." : "保存"}</button>
-                <button onClick={onHideLevelForm} className="text-gray-600 px-3 py-1 rounded text-sm border hover:bg-gray-50">取消</button>
+                <Button size="sm" onClick={onAddLevel} disabled={addingLevel}>{addingLevel ? "保存中..." : "保存"}</Button>
+                <Button size="sm" variant="outline" onClick={onHideLevelForm}>取消</Button>
               </div>
             </div>
           ) : (
-            <button onClick={onShowLevelForm} className="text-blue-600 text-sm hover:underline mt-2 inline-block">+ 添加等级</button>
+            <Button variant="link" size="sm" onClick={onShowLevelForm} className="mt-2">+ 添加等级</Button>
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
