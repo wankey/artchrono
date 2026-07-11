@@ -1,7 +1,8 @@
 // 学生列表页
 
 import { useState } from "react";
-import { useStudents, useCreateStudent } from "@/lib/queries";
+import { useStudents } from "@/lib/queries";
+import { useCreateStudent } from "@/lib/mutations";
 import { Search, Plus, Loader2 } from "lucide-react";
 
 export default function StudentsPage() {
