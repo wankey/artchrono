@@ -1,16 +1,32 @@
-// App 根组件 - V1 阶段简单实现
-// 路由等 V1 中后期再加
+// App 根组件 - V1 阶段
+// 根据 auth state 切换 login / home
+
+import { AuthProvider, useAuth } from "@/pages/Auth";
+import LoginPage from "@/pages/LoginPage";
+import HomePage from "@/pages/HomePage";
+
+function Root() {
+  const { state } = useAuth();
+
+  if (state.status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">加载中…</div>
+      </div>
+    );
+  }
+
+  if (state.status === "anonymous") {
+    return <LoginPage />;
+  }
+
+  return <HomePage />;
+}
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">课程管家</h1>
-        <p className="text-gray-600">V1 骨架启动成功 ✨</p>
-        <p className="text-sm text-gray-400 mt-2">
-          下一步：T5 Auth flow + 实际页面
-        </p>
-      </div>
-    </div>
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
   );
 }
