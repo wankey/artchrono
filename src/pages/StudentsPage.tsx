@@ -6,6 +6,7 @@ import { useCreateStudent, useDeleteStudent } from "@/lib/mutations";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus, Loader2, Trash2 } from "lucide-react";
+import { ConfirmModal, AlertModal } from "@/components/ConfirmModal";
 
 export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (id: string) => void }) {
   const { data: students, isLoading, error } = useStudents();
@@ -17,6 +18,8 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
   const [parentName, setParentName] = useState("");
   const [parentPhone, setParentPhone] = useState("");
   const [parentWechat, setParentWechat] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   // 批量获取所有报名（含课程+等级）
   const { data: allEnrollments } = useQuery({
@@ -130,23 +133,11 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
                   </div>
                   <button
                     type="button"
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log("[Delete student] clicked", s.id);
-                      const ok = window.confirm(`确认删除学生「${s.name}」？\n（有未来课程会拒绝）`);
-                      if (!ok) return;
-                      try {
-                        await deleteStudent.mutateAsync(s.id);
-                      } catch (err: any) {
-                        console.error("[Delete student] failed:", err);
-                        window.alert(`删除失败：${err.message}`);
-                      }
-                    }}
-                    className="ml-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded z-10 relative"
+                    onClick={() => setConfirmDelete({ id: s.id, name: s.name })}
+                    className="ml-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
                     title="删除学生"
                   >
-                    <Trash2 className="w-4 h-4 pointer-events-none" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
                 </div>
@@ -155,6 +146,25 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
           })
         )}
       </div>
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        title="确认删除学生"
+        message={`确认删除「${confirmDelete?.name}」？\n（有未来课程会拒绝）`}
+        confirmText="删除"
+        danger
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={async () => {
+          if (!confirmDelete) return;
+          try {
+            await deleteStudent.mutateAsync(confirmDelete.id);
+          } catch (err: any) {
+            setAlertMsg(err.message || String(err));
+          }
+          setConfirmDelete(null);
+        }}
+      />
+      <AlertModal open={!!alertMsg} title="删除失败" message={alertMsg || ""} onClose={() => setAlertMsg(null)} />
     </div>
   );
 }
