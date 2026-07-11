@@ -68,7 +68,7 @@ export function useUpdateStudent() {
 export function useCreateCourse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { name: string; description?: string }) => {
+    mutationFn: async (input: { name: string; description?: string; default_duration_minutes?: number }) => {
       const teacherId = await getTeacherId();
       const { data, error } = await supabase
         .from("courses")
@@ -76,6 +76,7 @@ export function useCreateCourse() {
           teacher_id: teacherId,
           name: input.name,
           description: input.description || null,
+          default_duration_minutes: input.default_duration_minutes ?? 60,
         })
         .select()
         .single();
