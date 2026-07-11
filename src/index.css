@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Tailwind CSS 4 用 CSS-first 配置 */
+/* 主题色、字体等都在这里定义 */
+
+@theme {
+  --color-primary: oklch(0.55 0.18 250);  /* 蓝色调，教室感 */
+  --color-primary-foreground: oklch(0.98 0 0);
+  --color-success: oklch(0.65 0.18 145);   /* 绿色调，出勤 */
+  --color-warning: oklch(0.75 0.18 75);    /* 黄色调，提醒 */
+  --color-danger: oklch(0.60 0.22 25);     /* 红色调，欠费 */
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
