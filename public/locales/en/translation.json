@@ -1,1 +1,14 @@
-{}
+{
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "label": "Language",
+      "description": "Choose interface language",
+      "zh-CN": "中文",
+      "en": "English"
+    }
+  },
+  "sidebar": {
+    "settings": "Settings"
+  }
+}

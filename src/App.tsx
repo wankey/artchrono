@@ -12,17 +12,20 @@ import ExportPage from "@/pages/ExportPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import StatsPage from "@/pages/StatsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import SettingsPage from "@/pages/SettingsPage";
+import { useT } from "@/i18n/useTypedTranslation";
 import { LogoIcon } from "@/components/Logo";
-import { BarChart3, CalendarDays, Users, GraduationCap, CreditCard, Download, LogOut } from "lucide-react";
+import { BarChart3, CalendarDays, Users, GraduationCap, CreditCard, Download, LogOut, Settings as SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type Page = "home" | "stats" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding";
+type Page = "home" | "stats" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding" | "settings";
 
 function Layout() {
   const [page, setPage] = useState<Page>("home");
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { state, signOut } = useAuth();
   const user = state.status === "authenticated" ? state.user : null;
+  const { t } = useT();
 
   // 启动时兜底 regeneration
   useEffect(() => {
@@ -58,6 +61,7 @@ function Layout() {
           <NavItem icon={<GraduationCap className="w-4 h-4" />} label="课程管理" active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
           <NavItem icon={<CreditCard className="w-4 h-4" />} label="付款录入" active={page === "payments"} onClick={() => { setPage("payments"); setSelectedStudentId(null); }} />
           <NavItem icon={<Download className="w-4 h-4" />} label="数据导出" active={page === "export"} onClick={() => { setPage("export"); setSelectedStudentId(null); }} />
+          <NavItem icon={<SettingsIcon className="w-4 h-4" />} label={t("sidebar.settings")} active={page === "settings"} onClick={() => { setPage("settings"); setSelectedStudentId(null); }} />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700/30 flex items-center justify-between">
           <span className="text-xs text-gray-400 truncate">{user?.email}</span>
@@ -80,6 +84,7 @@ function Layout() {
         {page === "courses" && <CoursesPage />}
         {page === "payments" && <PaymentsPage />}
         {page === "export" && <ExportPage />}
+        {page === "settings" && <SettingsPage />}
         {page === "onboarding" && <OnboardingPage onComplete={() => setPage("home")} />}
       </main>
     </div>

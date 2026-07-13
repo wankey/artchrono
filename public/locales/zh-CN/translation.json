@@ -1,1 +1,14 @@
-{}
+{
+  "settings": {
+    "title": "设置",
+    "language": {
+      "label": "语言",
+      "description": "选择界面语言",
+      "zh-CN": "中文",
+      "en": "English"
+    }
+  },
+  "sidebar": {
+    "settings": "设置"
+  }
+}
