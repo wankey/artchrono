@@ -13,18 +13,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useStudents, useEnrollments } from "@/lib/queries";
 import { formatDateISO } from "@/lib/utils";
+import { useT } from "@/i18n/useTypedTranslation";
 
-const STATUS_LABELS: Record<string, string> = {
-  scheduled: "待上课",
-  attended: "已出席",
-  cancelled: "已取消",
-  no_show: "缺勤",
-  make_up: "补课",
+const STATUS_KEYS: Record<string, string> = {
+  scheduled: "home.attendance.scheduled",
+  attended: "home.attendance.attended",
+  cancelled: "home.attendance.cancelled",
+  no_show: "home.attendance.noShow",
+  make_up: "home.attendance.makeUp",
 };
 
-const WEEKDAY_LABELS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const WEEKDAY_KEYS = [
+  "home.weekdays.sun",
+  "home.weekdays.mon",
+  "home.weekdays.tue",
+  "home.weekdays.wed",
+  "home.weekdays.thu",
+  "home.weekdays.fri",
+  "home.weekdays.sat",
+];
 
 export default function HomePage({ onSelectStudent }: { onSelectStudent?: (id: string) => void }) {
+  const { t } = useT();
+
   const [view, setView] = useState<"day" | "week">("day");
   const [dayOffset, setDayOffset] = useState(0);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -40,20 +51,20 @@ export default function HomePage({ onSelectStudent }: { onSelectStudent?: (id: s
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-0 border rounded-lg overflow-hidden">
           <button onClick={() => setView("day")}
-            className={`px-4 py-1.5 text-sm font-medium ${view === "day" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>今日</button>
+            className={`px-4 py-1.5 text-sm font-medium ${view === "day" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>{t("home.today")}</button>
           <button onClick={() => setView("week")}
-            className={`px-4 py-1.5 text-sm font-medium ${view === "week" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>本周</button>
+            className={`px-4 py-1.5 text-sm font-medium ${view === "week" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>{t("home.thisWeek")}</button>
         </div>
         {view === "day" ? (
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <button onClick={() => setDayOffset(d => d - 1)} className="p-1 hover:text-gray-700"><ChevronLeft className="w-4 h-4" /></button>
-            <button onClick={() => setDayOffset(0)} className={`px-2 py-0.5 rounded text-xs font-medium ${dayOffset === 0 ? "bg-[#5BB5A2] text-white" : "text-gray-500 hover:text-gray-700"}`}>今天</button>
+            <button onClick={() => setDayOffset(0)} className={`px-2 py-0.5 rounded text-xs font-medium ${dayOffset === 0 ? "bg-[#5BB5A2] text-white" : "text-gray-500 hover:text-gray-700"}`}>{t("home.todayShort")}</button>
             <button onClick={() => setDayOffset(d => d + 1)} className="p-1 hover:text-gray-700"><ChevronRight className="w-4 h-4" /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <button onClick={() => setWeekOffset(w => w - 1)} className="p-1 hover:text-gray-700"><ChevronLeft className="w-4 h-4" /></button>
-            <button onClick={() => setWeekOffset(0)} className={`px-2 py-0.5 rounded text-xs font-medium ${weekOffset === 0 ? "bg-[#5BB5A2] text-white" : "text-gray-500 hover:text-gray-700"}`}>本周</button>
+            <button onClick={() => setWeekOffset(0)} className={`px-2 py-0.5 rounded text-xs font-medium ${weekOffset === 0 ? "bg-[#5BB5A2] text-white" : "text-gray-500 hover:text-gray-700"}`}>{t("home.thisWeek")}</button>
             <button onClick={() => setWeekOffset(w => w + 1)} className="p-1 hover:text-gray-700"><ChevronRight className="w-4 h-4" /></button>
           </div>
         )}
@@ -74,6 +85,7 @@ function DayView({ onSelectStudent, dateStr, holidayMap }: {
   dateStr: string;
   holidayMap: Map<string, { name: string }>;
 }) {
+  const { t } = useT();
   const { data: classes, isLoading, error } = useDayClasses(dateStr);
   const { data: lowBalanceEnrollments } = useLowBalanceEnrollments();
   const qc = useQueryClient();
@@ -225,7 +237,7 @@ function DayView({ onSelectStudent, dateStr, holidayMap }: {
                       <p className={`text-xs text-gray-400`}>
                         {sc.class_slots?.location && <><MapPin className="w-3 h-3 inline mr-0.5" />{sc.class_slots.location}</>}
                       </p>
-                      <p className={`text-sm ${isDone ? "text-gray-400" : "text-green-600"}`}>{STATUS_LABELS[sc.status] ?? sc.status}</p>
+                      <p className={`text-sm ${isDone ? "text-gray-400" : "text-green-600"}`}>{STATUS_KEYS[sc.status] ? t(STATUS_KEYS[sc.status]) : sc.status}</p>
                     </div>
                   </div>
                   {!isDone && (
@@ -336,6 +348,7 @@ function WeekView({ onSelectStudent, weekOffset, holidayMap }: {
   weekOffset: number;
   holidayMap: Map<string, { name: string }>;
 }) {
+  const { t } = useT();
   const { data: allClasses, isLoading } = useWeekClasses(weekOffset);
   const qc = useQueryClient();
 
@@ -392,7 +405,7 @@ function WeekView({ onSelectStudent, weekOffset, holidayMap }: {
           return (
             <div key={i} className="flex-1 min-w-[90px]">
               <div className={`text-center pb-2 mb-2 border-b ${isToday ? "border-[#5BB5A2]" : "border-gray-200"}`}>
-                <div className={`text-xs font-medium ${isToday ? "text-[#5BB5A2]" : "text-gray-400"}`}>{WEEKDAY_LABELS[i]}</div>
+                <div className={`text-xs font-medium ${isToday ? "text-[#5BB5A2]" : "text-gray-400"}`}>{t(WEEKDAY_KEYS[i])}</div>
                 <div className={`text-lg font-bold ${isToday ? "text-gray-900" : "text-gray-700"}`}>{day.getDate()}</div>
                 {holiday && <div className="text-[10px] text-[#5BB5A2] truncate">{holiday.name}</div>}
               </div>
@@ -421,7 +434,7 @@ function WeekView({ onSelectStudent, weekOffset, holidayMap }: {
                         )}
                         {isDone && (
                           <div className={`text-[10px] mt-1 font-medium ${sc.status === "attended" ? "text-green-600" : sc.status === "no_show" ? "text-red-500" : "text-gray-400"}`}>
-                            {STATUS_LABELS[sc.status]}
+                            {STATUS_KEYS[sc.status] ? t(STATUS_KEYS[sc.status]) : sc.status}
                           </div>
                         )}
                       </CardContent>

@@ -1,4 +1,20 @@
 {
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "saveFailed": "Save failed",
+    "deleteFailed": "Delete failed",
+    "loadFailed": "Load failed"
+  },
   "login": {
     "subtitle": "Record every moment of art",
     "signinHeading": "Sign in",
@@ -24,15 +40,6 @@
       "unknown": "Sign-in failed, please try again"
     }
   },
-  "settings": {
-    "title": "Settings",
-    "language": {
-      "label": "Language",
-      "description": "Choose interface language",
-      "zh-CN": "中文",
-      "en": "English"
-    }
-  },
   "sidebar": {
     "stats": "Dashboard",
     "home": "Today's classes",
@@ -42,5 +49,310 @@
     "export": "Export",
     "settings": "Settings",
     "logout": "Sign out"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "label": "Language",
+      "description": "Choose interface language",
+      "zh-CN": "中文",
+      "en": "English"
+    }
+  },
+  "home": {
+    "today": "Today",
+    "thisWeek": "This week",
+    "todayShort": "Today",
+    "offline": "Offline",
+    "offlineQueue": "operations pending",
+    "syncNow": "Sync now",
+    "empty": "No classes scheduled",
+    "emptyHint": "Schedule classes in Students, or add a temp class",
+    "addTempClass": "Add temp class",
+    "collapse": "Collapse",
+    "attendance": {
+      "scheduled": "Scheduled",
+      "attended": "Attended",
+      "cancelled": "Cancelled",
+      "noShow": "No-show",
+      "makeUp": "Make-up"
+    },
+    "weekdays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "renewal": {
+      "title": "Renewal reminder:",
+      "remaining": "{count} classes left"
+    },
+    "makeup": {
+      "title": "Temp / make-up class",
+      "selectStudent": "Select student",
+      "selectEnrollment": "Select enrollment",
+      "creating": "Creating...",
+      "create": "Create"
+    }
+  },
+  "stats": {
+    "title": "Dashboard",
+    "monthlyRevenue": "Monthly revenue",
+    "activeStudents": "Active students",
+    "monthlyAttendance": "Attendance rate",
+    "pendingRenewals": "Pending renewals",
+    "lowBalance": "Balance ≤ 2 classes",
+    "dailyRevenue": "Daily revenue this month",
+    "perMonth": "/ month",
+    "noPayments": "No payments this month",
+    "classesAndTx": "{classes} classes · {count} tx",
+    "studentsTotal": "Total {count} students",
+    "attendanceSubtitle": "{attended}/{total} attended",
+    "quickLinks": {
+      "recordPayment": "Record payment",
+      "manageStudents": "Manage students",
+      "exportData": "Export data"
+    }
+  },
+  "students": {
+    "title": "Students",
+    "addStudent": "Add student",
+    "search": "Search students, parents, or phone...",
+    "empty": "No students yet",
+    "noMatch": "No matches",
+    "form": {
+      "title": "Add student",
+      "nameLabel": "Name *",
+      "namePlaceholder": "Student name",
+      "parentNameLabel": "Parent name",
+      "parentNamePlaceholder": "Parent name",
+      "parentPhoneLabel": "Parent phone",
+      "parentPhonePlaceholder": "Phone number",
+      "parentWechatLabel": "Parent WeChat",
+      "parentWechatPlaceholder": "WeChat ID"
+    },
+    "status": {
+      "graduated": "Graduated",
+      "paused": "Paused",
+      "preregistered": "Pre-registered",
+      "active": "Active"
+    },
+    "delete": {
+      "title": "Confirm delete",
+      "message": "Delete \"{name}\"?\n(Will fail if there are future classes)",
+      "deleteButton": "Delete",
+      "failedTitle": "Delete failed",
+      "titleAria": "Delete student"
+    },
+    "parent": "Parent: ",
+    "classesRemaining": "{count} left"
+  },
+  "studentDetail": {
+    "back": "Back",
+    "tabs": {
+      "enrollments": "Enrollments",
+      "payments": "Payments",
+      "attendance": "Attendance",
+      "info": "Info"
+    },
+    "info": {
+      "title": "Student info",
+      "name": "Name",
+      "parent": "Parent",
+      "phone": "Phone",
+      "wechat": "WeChat",
+      "enrolled": "Enrolled",
+      "notes": "Notes",
+      "edit": "Edit"
+    },
+    "payments": {
+      "empty": "No payment records",
+      "totalPaid": "Total paid: ",
+      "totalClasses": "Total classes: ",
+      "headers": {
+        "date": "Date",
+        "course": "Course",
+        "classes": "Classes",
+        "amount": "Amount",
+        "method": "Method"
+      }
+    },
+    "attendance": {
+      "empty": "No attendance records",
+      "attended": "attended",
+      "missed": "missed",
+      "total": "total records",
+      "headers": {
+        "date": "Date",
+        "course": "Course",
+        "time": "Time",
+        "status": "Status"
+      },
+      "labels": {
+        "attended": "Attended",
+        "noShow": "No-show",
+        "cancelled": "Cancelled",
+        "makeUp": "Make-up"
+      }
+    },
+    "enrollments": {
+      "title": "Enrollments",
+      "newEnrollment": "New enrollment",
+      "graduate": "Graduate",
+      "empty": "No enrollments",
+      "balance": "{count} classes left",
+      "pay": "Pay",
+      "schedule": "Schedule",
+      "end": "End",
+      "upgrade": "Upgrade",
+      "endConfirmTitle": "End enrollment?",
+      "endConfirmBody": "This enrollment has {remaining} unused classes, refund about ¥{refund}{pricePerClass}.",
+      "pricePerClass": " (¥{price}/class × {count})",
+      "confirmEnd": "Confirm end",
+      "levelFormat": "(Level {n})",
+      "slotEmpty": "No slots yet. Click Schedule to add.",
+      "nextClass": "Next class: {date} {time}",
+      "deleteSlotConfirm": "Delete this slot? Completed attendance is unaffected.",
+      "deleteSlotTitle": "Delete slot",
+      "upgradeTo": "Upgrade to {course} level {n}. Remaining {remaining} classes will transfer.",
+      "weekday": "Day",
+      "start": "Start",
+      "endWithDuration": "End ({duration}min)",
+      "location": "Location",
+      "locationPlaceholder": "Optional"
+    },
+    "paymentForm": {
+      "title": "Record payment",
+      "classesLabel": "Classes",
+      "amountLabel": "Amount (¥)",
+      "methodLabel": "Method",
+      "submit": "Confirm",
+      "submitting": "..."
+    },
+    "addEnrollment": {
+      "courseLabel": "Course *",
+      "selectCourse": "Select course",
+      "levelLabel": "Level *",
+      "selectLevel": "Select level",
+      "levelOption": "{name} (¥{price}/class)",
+      "classesPaidLabel": "Classes paid",
+      "amountLabel": "Amount paid (¥)"
+    }
+  },
+  "courses": {
+    "title": "Courses",
+    "addCourse": "Add course",
+    "form": {
+      "title": "Add course",
+      "nameLabel": "Course name *",
+      "namePlaceholder": "Piano",
+      "descLabel": "Description",
+      "descPlaceholder": "One-on-one teaching",
+      "durationLabel": "Default duration (min)"
+    },
+    "empty": "No courses yet",
+    "deleteCourseConfirm": "Delete course \"{name}\"?\n(Will fail if there are enrollments)",
+    "deleteCourseTitle": "Delete course",
+    "levelsCount": "{n} levels · {duration}min/class",
+    "defaultDuration": "Default duration: ",
+    "minutes": "{n} minutes",
+    "edit": "Edit",
+    "noLevels": "No levels set",
+    "levelNameFallback": "Level {n}",
+    "deleteLevelConfirm": "Delete level \"{name}\"?",
+    "deleteLevelTitle": "Delete level",
+    "pricePerClass": "¥{price} / class",
+    "levelForm": {
+      "numberLabel": "Level number",
+      "nameLabel": "Level name",
+      "namePlaceholder": "Beginner",
+      "priceLabel": "Price per class (¥)",
+      "durationLabel": "Duration (min, blank=default)"
+    },
+    "addLevel": "+ Add level"
+  },
+  "payments": {
+    "title": "Payments",
+    "tabs": {
+      "record": "Record",
+      "history": "History"
+    },
+    "record": {
+      "hint": "Pick a student, then an enrollment, then record the payment",
+      "selectOther": "← Pick another student",
+      "noEnrollments": "No enrollments for this student",
+      "currentBalance": "Current balance: {n} classes",
+      "classesLabel": "Classes *",
+      "amountLabel": "Amount (¥)",
+      "methodLabel": "Method",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Summer discount / Returning student / Referral…",
+      "submit": "Confirm payment",
+      "reselect": "Reselect",
+      "balance": "Balance: {n}"
+    },
+    "history": {
+      "totalAmount": "Total received: ",
+      "totalClasses": "Total classes: ",
+      "count": "Count: ",
+      "empty": "No payment records",
+      "headers": {
+        "date": "Date",
+        "student": "Student",
+        "course": "Course",
+        "classes": "Classes",
+        "amount": "Amount",
+        "method": "Method",
+        "notes": "Notes"
+      }
+    },
+    "method": {
+      "wechat": "WeChat",
+      "alipay": "Alipay",
+      "cash": "Cash",
+      "bank": "Bank"
+    },
+    "levelFormat": "Lv.{n}",
+    "successMessage": "Recorded {n} classes, ¥{amount}"
+  },
+  "export": {
+    "title": "Export data",
+    "students": {
+      "title": "Students",
+      "description": "With course, level, balance. One row per (student, enrollment)",
+      "exporting": "Exporting...",
+      "exported": "Exported ✅"
+    },
+    "payments": {
+      "title": "Payments",
+      "description": "With student, course, classes, amount, method"
+    },
+    "button": "Export"
+  },
+  "onboarding": {
+    "step1Title": "1/4 · Add your first course",
+    "step1Subtitle": "e.g. \"Piano\"",
+    "courseNamePlaceholder": "Course name",
+    "step2Title": "1/4 · Set up a level",
+    "step2Subtitle": "Price per class",
+    "levelNumPlaceholder": "Level number",
+    "levelNamePlaceholder": "Level name",
+    "pricePlaceholder": "Price per class (¥)",
+    "step3Title": "2/4 · Add your first student",
+    "studentNamePlaceholder": "Student name",
+    "parentPhonePlaceholder": "Parent phone",
+    "step4Title": "3/4 · Enrollment & payment",
+    "classesPaidLabel": "Classes paid",
+    "amountLabel": "Amount (¥)",
+    "step5Title": "4/4 · Schedule first class",
+    "step5Subtitle": "Set the regular time",
+    "completeButton": "Done 🎉",
+    "nextButton": "Next",
+    "doneTitle": "All done!",
+    "doneMessage": "You set up: course + level + student + enrollment + first class",
+    "startUsing": "Start using"
   }
 }

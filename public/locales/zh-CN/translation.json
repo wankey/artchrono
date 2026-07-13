@@ -1,4 +1,20 @@
 {
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "confirm": "确认",
+    "back": "返回",
+    "loading": "加载中...",
+    "error": "出错了",
+    "retry": "重试",
+    "saving": "保存中...",
+    "processing": "处理中...",
+    "saveFailed": "保存失败",
+    "deleteFailed": "删除失败",
+    "loadFailed": "加载失败"
+  },
   "login": {
     "subtitle": "记录每一刻艺术时光",
     "signinHeading": "登录",
@@ -24,15 +40,6 @@
       "unknown": "登录失败，请重试"
     }
   },
-  "settings": {
-    "title": "设置",
-    "language": {
-      "label": "语言",
-      "description": "选择界面语言",
-      "zh-CN": "中文",
-      "en": "English"
-    }
-  },
   "sidebar": {
     "stats": "数据看板",
     "home": "今日课程",
@@ -42,5 +49,310 @@
     "export": "数据导出",
     "settings": "设置",
     "logout": "登出"
+  },
+  "settings": {
+    "title": "设置",
+    "language": {
+      "label": "语言",
+      "description": "选择界面语言",
+      "zh-CN": "中文",
+      "en": "English"
+    }
+  },
+  "home": {
+    "today": "今日",
+    "thisWeek": "本周",
+    "todayShort": "今天",
+    "offline": "离线模式",
+    "offlineQueue": "个操作待同步",
+    "syncNow": "立即同步",
+    "empty": "这天没有排课",
+    "emptyHint": "去「学生管理」给已报名的学生排课，或添加临时课程",
+    "addTempClass": "添加临时课程",
+    "collapse": "收起",
+    "attendance": {
+      "scheduled": "待上课",
+      "attended": "已出席",
+      "cancelled": "已取消",
+      "noShow": "缺勤",
+      "makeUp": "补课"
+    },
+    "weekdays": {
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六",
+      "sun": "周日"
+    },
+    "renewal": {
+      "title": "续费提醒：",
+      "remaining": "余 {count} 节"
+    },
+    "makeup": {
+      "title": "临时补课 / 调课",
+      "selectStudent": "选学生",
+      "selectEnrollment": "选报名",
+      "creating": "创建中...",
+      "create": "创建"
+    }
+  },
+  "stats": {
+    "title": "数据看板",
+    "monthlyRevenue": "本月收入",
+    "activeStudents": "活跃学生",
+    "monthlyAttendance": "本月出勤率",
+    "pendingRenewals": "待续费",
+    "lowBalance": "余额 ≤ 2 节",
+    "dailyRevenue": "本月每日收入",
+    "perMonth": "/ 月",
+    "noPayments": "本月暂无收款记录",
+    "classesAndTx": "{classes} 节课 · {count} 笔",
+    "studentsTotal": "共 {count} 名学生",
+    "attendanceSubtitle": "{attended}/{total} 次出勤",
+    "quickLinks": {
+      "recordPayment": "录入付款",
+      "manageStudents": "管理学生",
+      "exportData": "导出数据"
+    }
+  },
+  "students": {
+    "title": "学生管理",
+    "addStudent": "添加学生",
+    "search": "搜索学生、家长或手机号...",
+    "empty": "还没有学生",
+    "noMatch": "无匹配结果",
+    "form": {
+      "title": "添加学生",
+      "nameLabel": "姓名 *",
+      "namePlaceholder": "学生姓名",
+      "parentNameLabel": "家长姓名",
+      "parentNamePlaceholder": "家长姓名",
+      "parentPhoneLabel": "家长电话",
+      "parentPhonePlaceholder": "手机号",
+      "parentWechatLabel": "家长微信",
+      "parentWechatPlaceholder": "微信号"
+    },
+    "status": {
+      "graduated": "已毕业",
+      "paused": "暂停",
+      "preregistered": "预报名",
+      "active": "在读"
+    },
+    "delete": {
+      "title": "确认删除学生",
+      "message": "确认删除「{name}」？\n（有未来课程会拒绝）",
+      "deleteButton": "删除",
+      "failedTitle": "删除失败",
+      "titleAria": "删除学生"
+    },
+    "parent": "家长：",
+    "classesRemaining": "{count}节"
+  },
+  "studentDetail": {
+    "back": "返回",
+    "tabs": {
+      "enrollments": "报名与课位",
+      "payments": "付款记录",
+      "attendance": "考勤历史",
+      "info": "学生信息"
+    },
+    "info": {
+      "title": "学生信息",
+      "name": "姓名",
+      "parent": "家长",
+      "phone": "电话",
+      "wechat": "微信",
+      "enrolled": "入学",
+      "notes": "备注",
+      "edit": "编辑"
+    },
+    "payments": {
+      "empty": "还没有付款记录",
+      "totalPaid": "累计缴费：",
+      "totalClasses": "累计购课：",
+      "headers": {
+        "date": "日期",
+        "course": "课程",
+        "classes": "节数",
+        "amount": "金额",
+        "method": "方式"
+      }
+    },
+    "attendance": {
+      "empty": "还没有考勤记录",
+      "attended": "次出席",
+      "missed": "次缺勤",
+      "total": "次总记录",
+      "headers": {
+        "date": "日期",
+        "course": "课程",
+        "time": "时间",
+        "status": "状态"
+      },
+      "labels": {
+        "attended": "已出席",
+        "noShow": "缺勤",
+        "cancelled": "已取消",
+        "makeUp": "补课"
+      }
+    },
+    "enrollments": {
+      "title": "报名",
+      "newEnrollment": "新建报名",
+      "graduate": "毕业",
+      "empty": "还没有报名",
+      "balance": "余额 {count} 节",
+      "pay": "付款",
+      "schedule": "排课",
+      "end": "结束",
+      "upgrade": "升级",
+      "endConfirmTitle": "确认结束报名？",
+      "endConfirmBody": "该报名还有 {remaining} 节未上完，需退款约 ¥{refund}{pricePerClass}。",
+      "pricePerClass": "（¥{price}/节 × {count} 节）",
+      "confirmEnd": "确认结束",
+      "levelFormat": "（第 {n} 级）",
+      "slotEmpty": "还没有课位，点击\"排课\"添加",
+      "nextClass": "下一节课：{date} {time}",
+      "deleteSlotConfirm": "确认删除这个课位？已完成的出勤记录不受影响。",
+      "deleteSlotTitle": "删除课位",
+      "upgradeTo": "升级到 {course} 第 {n} 级。剩余 {remaining} 节将转到新课位。",
+      "weekday": "星期",
+      "start": "开始",
+      "endWithDuration": "结束（{duration}min）",
+      "location": "教室",
+      "locationPlaceholder": "选填"
+    },
+    "paymentForm": {
+      "title": "录入付款",
+      "classesLabel": "节数",
+      "amountLabel": "金额（元）",
+      "methodLabel": "方式",
+      "submit": "确认",
+      "submitting": "..."
+    },
+    "addEnrollment": {
+      "courseLabel": "课程 *",
+      "selectCourse": "选课程",
+      "levelLabel": "等级 *",
+      "selectLevel": "选等级",
+      "levelOption": "{name} (¥{price}/节)",
+      "classesPaidLabel": "付款节数",
+      "amountLabel": "付款金额（元）"
+    }
+  },
+  "courses": {
+    "title": "课程管理",
+    "addCourse": "添加课程",
+    "form": {
+      "title": "添加课程",
+      "nameLabel": "课程名 *",
+      "namePlaceholder": "钢琴",
+      "descLabel": "描述",
+      "descPlaceholder": "一对一教学",
+      "durationLabel": "默认课时（分钟）"
+    },
+    "empty": "还没有课程",
+    "deleteCourseConfirm": "确认删除课程「{name}」？\n（有报名会失败）",
+    "deleteCourseTitle": "删除课程",
+    "levelsCount": "{n} 个等级 · {duration}分钟/课",
+    "defaultDuration": "默认课时：",
+    "minutes": "{n} 分钟",
+    "edit": "修改",
+    "noLevels": "还没设等级",
+    "levelNameFallback": "第 {n} 级",
+    "deleteLevelConfirm": "删除等级「{name}」？",
+    "deleteLevelTitle": "删除等级",
+    "pricePerClass": "¥{price} / 节",
+    "levelForm": {
+      "numberLabel": "等级序号",
+      "nameLabel": "等级名",
+      "namePlaceholder": "初级",
+      "priceLabel": "单节课费（元）",
+      "durationLabel": "课时（分，留空=默认）"
+    },
+    "addLevel": "+ 添加等级"
+  },
+  "payments": {
+    "title": "付款管理",
+    "tabs": {
+      "record": "录入",
+      "history": "记录"
+    },
+    "record": {
+      "hint": "先选学生，再选对应报名 → 录入付款",
+      "selectOther": "← 选其他学生",
+      "noEnrollments": "该学生还没有报名",
+      "currentBalance": "当前余额：{n} 节",
+      "classesLabel": "节数 *",
+      "amountLabel": "金额（元）",
+      "methodLabel": "收款方式",
+      "notesLabel": "备注（选填）",
+      "notesPlaceholder": "暑期限时优惠 / 老生折扣 / 转介绍…",
+      "submit": "确认收款",
+      "reselect": "重选",
+      "balance": "余额：{n} 节"
+    },
+    "history": {
+      "totalAmount": "总收款：",
+      "totalClasses": "总售课：",
+      "count": "笔数：",
+      "empty": "暂无付款记录",
+      "headers": {
+        "date": "日期",
+        "student": "学生",
+        "course": "课程",
+        "classes": "节数",
+        "amount": "金额",
+        "method": "方式",
+        "notes": "备注"
+      }
+    },
+    "method": {
+      "wechat": "微信",
+      "alipay": "支付宝",
+      "cash": "现金",
+      "bank": "银行"
+    },
+    "levelFormat": "第{n}级",
+    "successMessage": "已录 {n} 节，¥{amount}"
+  },
+  "export": {
+    "title": "数据导出",
+    "students": {
+      "title": "学生列表",
+      "description": "含课程、等级、余额。每人一行（多报名即多行）",
+      "exporting": "导出中...",
+      "exported": "已导出 ✅"
+    },
+    "payments": {
+      "title": "付款记录",
+      "description": "含学生、课程、节数、金额、方式"
+    },
+    "button": "导出"
+  },
+  "onboarding": {
+    "step1Title": "1/4 · 添加第一个课程",
+    "step1Subtitle": "比如：「钢琴」",
+    "courseNamePlaceholder": "课程名",
+    "step2Title": "1/4 · 设置等级",
+    "step2Subtitle": "单节课学费",
+    "levelNumPlaceholder": "等级序号",
+    "levelNamePlaceholder": "等级名",
+    "pricePlaceholder": "单节费（元）",
+    "step3Title": "2/4 · 添加第一个学生",
+    "studentNamePlaceholder": "学生姓名",
+    "parentPhonePlaceholder": "家长电话",
+    "step4Title": "3/4 · 报名 & 付款",
+    "classesPaidLabel": "付款节数",
+    "amountLabel": "金额（元）",
+    "step5Title": "4/4 · 排第一节课",
+    "step5Subtitle": "确定固定上课时间",
+    "completeButton": "完成 🎉",
+    "nextButton": "下一步",
+    "doneTitle": "全部完成！",
+    "doneMessage": "你已经建好了：课程 + 等级 + 学生 + 报名 + 第一节课",
+    "startUsing": "开始使用"
   }
 }
