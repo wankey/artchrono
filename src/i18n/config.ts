@@ -17,7 +17,7 @@ i18n
     supportedLngs: ["zh-CN", "en"],
     detection: {
       order: ["navigator"],
-      caches: false
+      caches: []
     },
     interpolation: {
       escapeValue: false
