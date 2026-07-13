@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { useT } from "@/i18n/useTypedTranslation";
 
 export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (id: string) => void }) {
+  const { t } = useT();
   const { data: students, isLoading, error } = useStudents();
   const createStudent = useCreateStudent();
   const deleteStudent = useDeleteStudent();
@@ -64,25 +66,25 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">学生管理</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t("students.title")}</h2>
         <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="w-4 h-4" />添加学生
+          <Plus className="w-4 h-4" />{t("students.addStudent")}
         </Button>
       </div>
 
       {showForm && (
         <Card className="mb-6">
           <CardContent className="p-6 space-y-4">
-            <h3 className="font-semibold text-gray-900">添加学生</h3>
+            <h3 className="font-semibold text-gray-900">{t("students.form.title")}</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1"><Label>姓名 *</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="学生姓名" /></div>
-              <div className="space-y-1"><Label>家长姓名</Label><Input value={parentName} onChange={e => setParentName(e.target.value)} placeholder="家长姓名" /></div>
-              <div className="space-y-1"><Label>家长电话</Label><Input value={parentPhone} onChange={e => setParentPhone(e.target.value)} placeholder="手机号" /></div>
-              <div className="space-y-1"><Label>家长微信</Label><Input value={parentWechat} onChange={e => setParentWechat(e.target.value)} placeholder="微信号" /></div>
+              <div className="space-y-1"><Label>{t("students.form.nameLabel")}</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder={t("students.form.namePlaceholder")} /></div>
+              <div className="space-y-1"><Label>{t("students.form.parentNameLabel")}</Label><Input value={parentName} onChange={e => setParentName(e.target.value)} placeholder={t("students.form.parentNamePlaceholder")} /></div>
+              <div className="space-y-1"><Label>{t("students.form.parentPhoneLabel")}</Label><Input value={parentPhone} onChange={e => setParentPhone(e.target.value)} placeholder={t("students.form.parentPhonePlaceholder")} /></div>
+              <div className="space-y-1"><Label>{t("students.form.parentWechatLabel")}</Label><Input value={parentWechat} onChange={e => setParentWechat(e.target.value)} placeholder={t("students.form.parentWechatPlaceholder")} /></div>
             </div>
             <div className="flex gap-3">
-              <Button onClick={handleAdd} disabled={createStudent.isPending || !name.trim()}>{createStudent.isPending ? "保存中..." : "保存"}</Button>
-              <Button variant="outline" onClick={() => setShowForm(false)}>取消</Button>
+              <Button onClick={handleAdd} disabled={createStudent.isPending || !name.trim()}>{createStudent.isPending ? t("common.saving") : t("common.save")}</Button>
+              <Button variant="outline" onClick={() => setShowForm(false)}>{t("common.cancel")}</Button>
             </div>
           </CardContent>
         </Card>
@@ -90,12 +92,12 @@ export default function StudentsPage({ onSelectStudent }: { onSelectStudent?: (i
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <Input className="pl-10" placeholder="搜索学生、家长或手机号..." value={search} onChange={e => setSearch(e.target.value)} />
+        <Input className="pl-10" placeholder={t("students.search")} value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">{students?.length === 0 ? "还没有学生" : "无匹配结果"}</div>
+          <div className="text-center py-12 text-gray-400">{students?.length === 0 ? t("students.empty") : t("students.noMatch")}</div>
         ) : (
           filtered.map((s: any) => {
             const enrollments = (allEnrollments ?? []).filter((e: any) => e.student_id === s.id);
