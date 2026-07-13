@@ -13,10 +13,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useT } from "@/i18n/useTypedTranslation";
 
-const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const WEEKDAY_KEYS = [
+  "home.weekdays.sun",
+  "home.weekdays.mon",
+  "home.weekdays.tue",
+  "home.weekdays.wed",
+  "home.weekdays.thu",
+  "home.weekdays.fri",
+  "home.weekdays.sat",
+];
 
 export default function StudentDetailPage({ studentId, onBack }: { studentId: string; onBack: () => void }) {
+  const { t } = useT();
   const { data: student } = useStudent(studentId);
   const [tab, setTab] = useState<"enrollments" | "info" | "payments" | "attendance">("enrollments");
   if (!student) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
@@ -29,13 +39,13 @@ export default function StudentDetailPage({ studentId, onBack }: { studentId: st
           student.status === "graduated" ? "secondary" :
           student.status === "paused" ? "outline" :
           "default"
-        }>{student.status === "graduated" ? "已毕业" : student.status === "paused" ? "暂停" : "在读"}</Badge>
+        }>{student.status === "graduated" ? t("students.status.graduated") : student.status === "paused" ? t("students.status.paused") : t("students.status.active")}</Badge>
       </div>
       <div className="flex gap-0 border-b mb-6">
-        <TabButton label="报名与课位" active={tab === "enrollments"} onClick={() => setTab("enrollments")} />
-        <TabButton label="付款记录" active={tab === "payments"} onClick={() => setTab("payments")} />
-        <TabButton label="考勤历史" active={tab === "attendance"} onClick={() => setTab("attendance")} />
-        <TabButton label="学生信息" active={tab === "info"} onClick={() => setTab("info")} />
+        <TabButton label={t("studentDetail.tabs.enrollments")} active={tab === "enrollments"} onClick={() => setTab("enrollments")} />
+        <TabButton label={t("studentDetail.tabs.payments")} active={tab === "payments"} onClick={() => setTab("payments")} />
+        <TabButton label={t("studentDetail.tabs.attendance")} active={tab === "attendance"} onClick={() => setTab("attendance")} />
+        <TabButton label={t("studentDetail.tabs.info")} active={tab === "info"} onClick={() => setTab("info")} />
       </div>
       {tab === "enrollments" && <EnrollmentsTab student={student} />}
       {tab === "payments" && <PaymentsTab studentId={student.id} />}
@@ -543,7 +553,7 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
       {/* 排课表单 */}
       {showSlotForm && (
         <Card className="mb-3"><CardContent className="p-3 grid grid-cols-4 gap-2">
-          <div><Label className="text-xs text-gray-600">星期</Label><select className="w-full px-2 py-1.5 border rounded text-sm h-9" value={weekday} onChange={e => setWeekday(parseInt(e.target.value))}>{WEEKDAY_LABELS.map((l, i) => <option key={i} value={i}>{l}</option>)}</select></div>
+          <div><Label className="text-xs text-gray-600">{t("studentDetail.enrollments.weekday")}</Label><select className="w-full px-2 py-1.5 border rounded text-sm h-9" value={weekday} onChange={e => setWeekday(parseInt(e.target.value))}>{WEEKDAY_KEYS.map((k, i) => <option key={i} value={i}>{t(k)}</option>)}</select></div>
           <div><Label className="text-xs text-gray-600">开始</Label><Input type="time" className="h-9 text-sm" value={startTime} onChange={e => handleStartTimeChange(e.target.value)} /></div>
           <div><Label className="text-xs text-gray-600">结束（{duration}min）</Label><Input type="time" className="h-9 text-sm" value={endTime} onChange={e => setEndTime(e.target.value)} /></div>
           <div><Label className="text-xs text-gray-600">教室</Label><Input className="h-9 text-sm" value={location} onChange={e => setLocation(e.target.value)} placeholder="选填" /></div>
@@ -563,7 +573,7 @@ function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any
       {slots?.map((slot: any) => (
         <div key={slot.id} className="flex items-center justify-between text-sm py-1.5 border-t group">
           <div className="flex items-center gap-2">
-            <span className="text-gray-700">📅 {WEEKDAY_LABELS[slot.weekday]} {slot.start_time?.slice(0,5)}-{slot.end_time?.slice(0,5)}</span>
+            <span className="text-gray-700">📅 {t(WEEKDAY_KEYS[slot.weekday])} {slot.start_time?.slice(0,5)}-{slot.end_time?.slice(0,5)}</span>
             {slot.location && <span className="text-gray-400 text-xs">📍{slot.location}</span>}
           </div>
           <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
