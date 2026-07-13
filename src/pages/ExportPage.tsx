@@ -6,8 +6,10 @@ import { Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
+import { useT } from "@/i18n/useTypedTranslation";
 
 export default function ExportPage() {
+  const { t } = useT();
   const { data: students, isLoading, error } = useStudents();
   const [studentExportDone, setStudentExportDone] = useState(false);
   const [paymentExportDone, setPaymentExportDone] = useState(false);
@@ -86,27 +88,27 @@ export default function ExportPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">数据导出</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("export.title")}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-6">
-            <h3 className="font-semibold text-gray-900 mb-1">学生列表</h3>
-            <p className="text-sm text-gray-500 mb-4">含课程、等级、余额。每人一行（多报名即多行）</p>
+            <h3 className="font-semibold text-gray-900 mb-1">{t("export.students.title")}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t("export.students.description")}</p>
             <Button onClick={handleExportStudents} disabled={!students || students.length === 0}>
               <Download className="w-4 h-4" />
-              {studentExportDone ? "已导出 ✅" : "导出"}
+              {studentExportDone ? t("export.students.exported") : t("export.button")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <h3 className="font-semibold text-gray-900 mb-1">付款记录</h3>
-            <p className="text-sm text-gray-500 mb-4">含学生、课程、节数、金额、方式</p>
+            <h3 className="font-semibold text-gray-900 mb-1">{t("export.payments.title")}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t("export.payments.description")}</p>
             <Button onClick={handleExportPayments} disabled={exportingPayments}>
               <Download className="w-4 h-4" />
-              {exportingPayments ? "导出中..." : paymentExportDone ? "已导出 ✅" : "导出"}
+              {exportingPayments ? t("export.students.exporting") : paymentExportDone ? t("export.students.exported") : t("export.button")}
             </Button>
           </CardContent>
         </Card>
