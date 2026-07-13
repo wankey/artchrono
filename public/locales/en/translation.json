@@ -1,5 +1,19 @@
 {
   "login": {
+    "subtitle": "Record every moment of art",
+    "signinHeading": "Sign in",
+    "signupHeading": "Sign up",
+    "emailLabel": "Email",
+    "emailPlaceholder": "teacher@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 6 characters",
+    "signInButton": "Sign in",
+    "signUpButton": "Sign up",
+    "loadingButton": "Processing...",
+    "noAccountPrompt": "No account?",
+    "noAccountLink": "Sign up",
+    "haveAccountPrompt": "Have an account?",
+    "haveAccountLink": "Sign in",
     "errors": {
       "invalidCredentials": "Invalid email or password",
       "userExists": "This email is already registered",

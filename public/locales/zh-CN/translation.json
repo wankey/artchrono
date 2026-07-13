@@ -1,5 +1,19 @@
 {
   "login": {
+    "subtitle": "记录每一刻艺术时光",
+    "signinHeading": "登录",
+    "signupHeading": "注册",
+    "emailLabel": "邮箱",
+    "emailPlaceholder": "teacher@example.com",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "至少 6 位",
+    "signInButton": "登录",
+    "signUpButton": "注册",
+    "loadingButton": "处理中...",
+    "noAccountPrompt": "没有账号？",
+    "noAccountLink": "去注册",
+    "haveAccountPrompt": "已有账号？",
+    "haveAccountLink": "去登录",
     "errors": {
       "invalidCredentials": "邮箱或密码错误",
       "userExists": "该邮箱已注册",

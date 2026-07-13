@@ -43,15 +43,15 @@ export default function LoginPage() {
             <LogoFull size="lg" />
           </div>
           <p className="text-center text-sm mb-6" style={{ color: "#5BB5A2" }}>
-            记录每一刻艺术时光
+            {t("login.subtitle")}
           </p>
           <p className="text-gray-400 text-center mb-6 text-xs">
-            {mode === "signin" ? "登录" : "注册"}
+            {mode === "signin" ? t("login.signinHeading") : t("login.signupHeading")}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <Label htmlFor="email">邮箱</Label>
+              <Label htmlFor="email">{t("login.emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -59,12 +59,12 @@ export default function LoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="teacher@example.com"
+                placeholder={t("login.emailPlaceholder")}
               />
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="password">密码</Label>
+              <Label htmlFor="password">{t("login.passwordLabel")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -73,7 +73,7 @@ export default function LoginPage() {
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="至少 6 位"
+                placeholder={t("login.passwordPlaceholder")}
               />
             </div>
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
             )}
 
             <Button type="submit" disabled={loading} className="w-full" style={{ backgroundColor: loading ? undefined : "#5BB5A2" }}>
-              {loading ? "处理中..." : mode === "signin" ? "登录" : "注册"}
+              {loading ? t("login.loadingButton") : mode === "signin" ? t("login.signInButton") : t("login.signUpButton")}
             </Button>
           </form>
 
@@ -97,7 +97,9 @@ export default function LoginPage() {
                 setError(null);
               }}
             >
-              {mode === "signin" ? "没有账号？去注册" : "已有账号？去登录"}
+              {mode === "signin"
+                ? `${t("login.noAccountPrompt")} ${t("login.noAccountLink")}`
+                : `${t("login.haveAccountPrompt")} ${t("login.haveAccountLink")}`}
             </Button>
           </div>
         </CardContent>
