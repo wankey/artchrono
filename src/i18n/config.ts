@@ -20,6 +20,8 @@ i18n
       caches: []
     },
     interpolation: {
+      prefix: "{",
+      suffix: "}",
       escapeValue: false
     }
   });
