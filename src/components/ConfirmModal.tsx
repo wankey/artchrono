@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 export function ConfirmModal({
-  open, title, message, confirmText = "确认", cancelText = "取消", danger, onConfirm, onCancel,
+  open, title, message, confirmText, cancelText, danger, onConfirm, onCancel,
 }: {
   open: boolean;
   title: string;
@@ -14,6 +14,8 @@ export function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const defaultConfirm = confirmText ?? "确认";
+  const defaultCancel = cancelText ?? "取消";
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -33,10 +35,10 @@ export function ConfirmModal({
         <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-sm text-gray-600 whitespace-pre-line mb-6">{message}</p>
         <div className="flex gap-3 justify-end">
-          <button onClick={onCancel} className="px-4 py-2 rounded text-sm border hover:bg-gray-50">{cancelText}</button>
+          <button onClick={onCancel} className="px-4 py-2 rounded text-sm border hover:bg-gray-50">{defaultCancel}</button>
           <button onClick={onConfirm}
             className={`px-4 py-2 rounded text-sm font-medium text-white ${danger ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}`}>
-            {confirmText}
+            {defaultConfirm}
           </button>
         </div>
       </div>
@@ -55,7 +57,7 @@ export function AlertModal({
         <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-sm text-gray-600 whitespace-pre-line mb-6">{message}</p>
         <div className="flex justify-end">
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-blue-600 text-white hover:bg-blue-700">知道了</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-blue-600 text-white hover:bg-blue-700">OK</button>
         </div>
       </div>
     </div>
