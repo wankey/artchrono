@@ -3,6 +3,8 @@
 
 import { useState, FormEvent } from "react";
 import { useAuth } from "@/pages/Login";
+import { useT } from "@/i18n/useTypedTranslation";
+import { translateSupabaseError } from "@/lib/i18n-errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogoFull } from "@/components/Logo";
@@ -12,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
+  const { t } = useT();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +31,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setError(error);
+      setError(translateSupabaseError(t, error) ?? error);
     }
   };
 

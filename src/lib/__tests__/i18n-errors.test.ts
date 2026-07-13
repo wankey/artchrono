@@ -1,8 +1,11 @@
 // src/lib/__tests__/i18n-errors.test.ts
 import { describe, it, expect } from "vitest";
+import type { TFunction } from "i18next";
 import { translateSupabaseError } from "../i18n-errors";
 
-const t = (key: string) => `[${key}]`;
+// Mock t() — wrap as TFunction so it satisfies the i18next signature
+const t = ((key: string | string[]) =>
+  `[${Array.isArray(key) ? key.join(".") : key}]`) as unknown as TFunction;
 
 describe("translateSupabaseError", () => {
   it("translates known Supabase errors to i18n keys", () => {
