@@ -3,8 +3,10 @@
 import { useMonthlyPayments, useMonthlyAttendance, useStudents, useLowBalanceEnrollments } from "@/lib/queries";
 import { Loader2, TrendingUp, Users, CheckCircle, AlertTriangle, DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useT } from "@/i18n/useTypedTranslation";
 
 export default function StatsPage() {
+  const { t } = useT();
   const { data: monthlyPayments, isLoading: loadingPayments } = useMonthlyPayments();
   const { data: attendanceRecords, isLoading: loadingAttendance } = useMonthlyAttendance();
   const { data: students, isLoading: loadingStudents } = useStudents();
@@ -38,38 +40,38 @@ export default function StatsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">数据看板</h2>
+      <h2 className="text-2xl font-bold text-gray-900">{t("stats.title")}</h2>
 
       {/* Row 1: Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="本月收入"
+          title={t("stats.monthlyRevenue")}
           value={`¥${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-          subtitle={`${totalClassesSold} 节课 · ${transactionCount} 笔`}
+          subtitle={t("stats.classesAndTx", { classes: totalClassesSold, count: transactionCount })}
           icon={<DollarSign className="w-5 h-5" />}
           color="text-emerald-600"
           bgColor="bg-emerald-50"
         />
         <StatCard
-          title="活跃学生"
+          title={t("stats.activeStudents")}
           value={String(activeStudents)}
-          subtitle={`共 ${students?.length ?? 0} 名学生`}
+          subtitle={t("stats.studentsTotal", { count: students?.length ?? 0 })}
           icon={<Users className="w-5 h-5" />}
           color="text-blue-600"
           bgColor="bg-blue-50"
         />
         <StatCard
-          title="本月出勤率"
+          title={t("stats.monthlyAttendance")}
           value={attendanceRate !== null ? `${attendanceRate}%` : "—"}
-          subtitle={`${attendedCount}/${totalAttendance} 次出勤`}
+          subtitle={t("stats.attendanceSubtitle", { attended: attendedCount, total: totalAttendance })}
           icon={<CheckCircle className="w-5 h-5" />}
           color="text-[#5BB5A2]"
           bgColor="bg-[#E8F4F0]"
         />
         <StatCard
-          title="待续费"
+          title={t("stats.pendingRenewals")}
           value={String(lowBalanceCount)}
-          subtitle="余额 ≤ 2 节"
+          subtitle={t("stats.lowBalance")}
           icon={<AlertTriangle className="w-5 h-5" />}
           color="text-orange-600"
           bgColor="bg-orange-50"
@@ -80,13 +82,13 @@ export default function StatsPage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">本月每日收入</h3>
+            <h3 className="font-semibold text-gray-900">{t("stats.dailyRevenue")}</h3>
             <span className="text-xs text-gray-400">
-              ¥{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / 月
+              ¥{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {t("stats.perMonth")}
             </span>
           </div>
           {dailyRevenue.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm">本月暂无收款记录</div>
+            <div className="text-center py-8 text-gray-400 text-sm">{t("stats.noPayments")}</div>
           ) : (
             <DailyChart data={dailyRevenue} />
           )}
@@ -95,9 +97,9 @@ export default function StatsPage() {
 
       {/* Row 3: Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <QuickLink href="#/payments" label="录入付款" icon={<DollarSign className="w-4 h-4" />} />
-        <QuickLink href="#/students" label="管理学生" icon={<Users className="w-4 h-4" />} />
-        <QuickLink href="#/export" label="导出数据" icon={<TrendingUp className="w-4 h-4" />} />
+        <QuickLink href="#/payments" label={t("stats.quickLinks.recordPayment")} icon={<DollarSign className="w-4 h-4" />} />
+        <QuickLink href="#/students" label={t("stats.quickLinks.manageStudents")} icon={<Users className="w-4 h-4" />} />
+        <QuickLink href="#/export" label={t("stats.quickLinks.exportData")} icon={<TrendingUp className="w-4 h-4" />} />
       </div>
     </div>
   );
