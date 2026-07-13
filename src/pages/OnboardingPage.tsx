@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { useT } from "@/i18n/useTypedTranslation";
 
 type Step = "course" | "level" | "student" | "enrollment" | "slot" | "done";
 
 export default function OnboardingPage({ onComplete }: { onComplete: () => void }) {
+  const { t } = useT();
   const { data: courses } = useCourses();
   const [step, setStep] = useState<Step>(courses && courses.length > 0 ? "student" : "course");
 
@@ -145,9 +147,9 @@ export default function OnboardingPage({ onComplete }: { onComplete: () => void 
           <Card className="border-green-200 bg-green-50">
             <CardContent className="p-8 text-center">
               <Check className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-green-800 mb-2">全部完成！</h3>
-              <p className="text-green-700 mb-4">你已经建好了：课程 + 等级 + 学生 + 报名 + 第一节课</p>
-              <Button onClick={onComplete} className="bg-green-600 hover:bg-green-700">开始使用</Button>
+              <h3 className="text-xl font-bold text-green-800 mb-2">{t("onboarding.doneTitle")}</h3>
+              <p className="text-green-700 mb-4">{t("onboarding.doneMessage")}</p>
+              <Button onClick={onComplete} className="bg-green-600 hover:bg-green-700">{t("onboarding.startUsing")}</Button>
             </CardContent>
           </Card>
         );
