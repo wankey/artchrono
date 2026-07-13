@@ -109,9 +109,10 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode; labe
 
 function Root() {
   const { state } = useAuth();
+  const { t } = useT();
 
   if (state.status === "loading") {
-    return <div className="min-h-screen flex items-center justify-center"><div className="text-gray-500">加载中…</div></div>;
+    return <div className="min-h-screen flex items-center justify-center"><div className="text-gray-500">{t("common.loading")}</div></div>;
   }
 
   if (state.status === "anonymous") {

@@ -1,6 +1,7 @@
 // 自建确认弹窗（替代 window.confirm/alert，Tauri WebView 兼容性更好）
 
 import { useEffect } from "react";
+import { useT } from "@/i18n/useTypedTranslation";
 
 export function ConfirmModal({
   open, title, message, confirmText, cancelText, danger, onConfirm, onCancel,
@@ -14,8 +15,9 @@ export function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const defaultConfirm = confirmText ?? "确认";
-  const defaultCancel = cancelText ?? "取消";
+  const { t } = useT();
+  const defaultConfirm = confirmText ?? t("common.confirm");
+  const defaultCancel = cancelText ?? t("common.cancel");
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
