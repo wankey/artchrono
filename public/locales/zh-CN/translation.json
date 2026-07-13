@@ -1,4 +1,15 @@
 {
+  "login": {
+    "errors": {
+      "invalidCredentials": "邮箱或密码错误",
+      "userExists": "该邮箱已注册",
+      "weakPassword": "密码至少 6 位",
+      "emailNotConfirmed": "邮箱未验证",
+      "rateLimited": "请求过于频繁，请稍后重试",
+      "networkError": "网络错误，请检查连接",
+      "unknown": "登录失败，请重试"
+    }
+  },
   "settings": {
     "title": "设置",
     "language": {

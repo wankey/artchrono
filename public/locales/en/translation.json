@@ -1,4 +1,15 @@
 {
+  "login": {
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "userExists": "This email is already registered",
+      "weakPassword": "Password must be at least 6 characters",
+      "emailNotConfirmed": "Email not confirmed",
+      "rateLimited": "Too many requests, please try again later",
+      "networkError": "Network error, please check your connection",
+      "unknown": "Sign-in failed, please try again"
+    }
+  },
   "settings": {
     "title": "Settings",
     "language": {
