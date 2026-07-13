@@ -11,18 +11,20 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useT } from "@/i18n/useTypedTranslation";
 
 export default function PaymentsPage() {
+  const { t } = useT();
   const [mode, setMode] = useState<"record" | "history">("record");
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">付款管理</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t("payments.title")}</h2>
         <div className="flex gap-0 border rounded-lg overflow-hidden">
           <button onClick={() => setMode("record")}
-            className={`px-4 py-1.5 text-sm font-medium ${mode === "record" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>录入</button>
+            className={`px-4 py-1.5 text-sm font-medium ${mode === "record" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>{t("payments.tabs.record")}</button>
           <button onClick={() => setMode("history")}
-            className={`px-4 py-1.5 text-sm font-medium ${mode === "history" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>记录</button>
+            className={`px-4 py-1.5 text-sm font-medium ${mode === "history" ? "bg-[#5BB5A2] text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}>{t("payments.tabs.history")}</button>
         </div>
       </div>
       {mode === "record" ? <RecordPayment /> : <PaymentHistory />}
