@@ -413,6 +413,7 @@ function AddEnrollmentForm({ studentId, onDone, onCancel, prefillCourseId, prefi
 }
 
 function EnrollmentCard({ enrollment, studentId, showPayForm, onTogglePay }: any) {
+  const { t } = useT();
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [weekday, setWeekday] = useState(6);
   const [startTime, setStartTime] = useState("09:00");
