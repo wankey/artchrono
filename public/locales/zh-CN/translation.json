@@ -34,6 +34,13 @@
     }
   },
   "sidebar": {
-    "settings": "设置"
+    "stats": "数据看板",
+    "home": "今日课程",
+    "students": "学生管理",
+    "courses": "课程管理",
+    "payments": "付款录入",
+    "export": "数据导出",
+    "settings": "设置",
+    "logout": "登出"
   }
 }

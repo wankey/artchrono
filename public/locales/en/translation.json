@@ -34,6 +34,13 @@
     }
   },
   "sidebar": {
-    "settings": "Settings"
+    "stats": "Dashboard",
+    "home": "Today's classes",
+    "students": "Students",
+    "courses": "Courses",
+    "payments": "Payments",
+    "export": "Export",
+    "settings": "Settings",
+    "logout": "Sign out"
   }
 }

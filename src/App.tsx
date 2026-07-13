@@ -55,17 +55,17 @@ function Layout() {
           </div>
         </div>
         <nav className="flex-1 py-2">
-          <NavItem icon={<BarChart3 className="w-4 h-4" />} label="数据看板" active={page === "stats"} onClick={() => { setPage("stats"); setSelectedStudentId(null); }} />
-          <NavItem icon={<CalendarDays className="w-4 h-4" />} label="今日课程" active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />
-          <NavItem icon={<Users className="w-4 h-4" />} label="学生管理" active={page === "students" || page === "student_detail"} onClick={() => { setPage("students"); setSelectedStudentId(null); }} />
-          <NavItem icon={<GraduationCap className="w-4 h-4" />} label="课程管理" active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
-          <NavItem icon={<CreditCard className="w-4 h-4" />} label="付款录入" active={page === "payments"} onClick={() => { setPage("payments"); setSelectedStudentId(null); }} />
-          <NavItem icon={<Download className="w-4 h-4" />} label="数据导出" active={page === "export"} onClick={() => { setPage("export"); setSelectedStudentId(null); }} />
+          <NavItem icon={<BarChart3 className="w-4 h-4" />} label={t("sidebar.stats")} active={page === "stats"} onClick={() => { setPage("stats"); setSelectedStudentId(null); }} />
+          <NavItem icon={<CalendarDays className="w-4 h-4" />} label={t("sidebar.home")} active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />
+          <NavItem icon={<Users className="w-4 h-4" />} label={t("sidebar.students")} active={page === "students" || page === "student_detail"} onClick={() => { setPage("students"); setSelectedStudentId(null); }} />
+          <NavItem icon={<GraduationCap className="w-4 h-4" />} label={t("sidebar.courses")} active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
+          <NavItem icon={<CreditCard className="w-4 h-4" />} label={t("sidebar.payments")} active={page === "payments"} onClick={() => { setPage("payments"); setSelectedStudentId(null); }} />
+          <NavItem icon={<Download className="w-4 h-4" />} label={t("sidebar.export")} active={page === "export"} onClick={() => { setPage("export"); setSelectedStudentId(null); }} />
           <NavItem icon={<SettingsIcon className="w-4 h-4" />} label={t("sidebar.settings")} active={page === "settings"} onClick={() => { setPage("settings"); setSelectedStudentId(null); }} />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700/30 flex items-center justify-between">
           <span className="text-xs text-gray-400 truncate">{user?.email}</span>
-          <button onClick={() => signOut()} className="text-gray-400 hover:text-white" title="登出">
+          <button onClick={() => signOut()} className="text-gray-400 hover:text-white" title={t("sidebar.logout")}>
             <LogOut className="w-4 h-4" />
           </button>
         </div>
