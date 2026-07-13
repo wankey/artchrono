@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { useT } from "@/i18n/useTypedTranslation";
 
 export default function CoursesPage() {
+  const { t } = useT();
   const { data: courses, isLoading } = useCourses();
   const createCourse = useCreateCourse();
   const createLevel = useCreateExamLevel();
@@ -53,8 +55,8 @@ export default function CoursesPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">课程管理</h2>
-        <Button onClick={() => setShowCourseForm(!showCourseForm)}><Plus className="w-4 h-4" />添加课程</Button>
+        <h2 className="text-2xl font-bold text-gray-900">{t("courses.title")}</h2>
+        <Button onClick={() => setShowCourseForm(!showCourseForm)}><Plus className="w-4 h-4" />{t("courses.addCourse")}</Button>
       </div>
 
       {showCourseForm && (
