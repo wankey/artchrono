@@ -2,16 +2,15 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
-import zhCN from "../../public/locales/zh-CN/translation.json";
-import en from "../../public/locales/en/translation.json";
+import HttpBackend from "i18next-http-backend";
 
 i18n
+  .use(HttpBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {
-      "zh-CN": { translation: zhCN },
-      "en": { translation: en }
+    backend: {
+      loadPath: "/locales/{{lng}}/{{ns}}.json"
     },
     fallbackLng: "zh-CN",
     supportedLngs: ["zh-CN", "en"],
