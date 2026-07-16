@@ -4,7 +4,7 @@ test.describe("App smoke tests", () => {
   test("首页加载并显示登录页面", async ({ page }) => {
     await page.goto("/");
     // 未登录状态下看到登录页
-    await expect(page.locator("h1")).toContainText("艺时纪");
+    await expect(page.getByText("艺时纪", { exact: true })).toBeVisible();
     await expect(page.locator("text=邮箱")).toBeVisible();
     await expect(page.locator("text=密码")).toBeVisible();
   });
@@ -19,7 +19,7 @@ test.describe("App smoke tests", () => {
     // 默认是登录模式
     await expect(page.getByRole("button", { name: "登录" })).toBeVisible();
     // 点击切换注册
-    await page.click("text=没有账号？去注册");
+    await page.getByRole("button", { name: /没有账号/ }).click();
     await expect(page.getByRole("button", { name: "注册" })).toBeVisible();
   });
 });
