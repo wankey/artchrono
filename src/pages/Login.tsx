@@ -24,15 +24,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 应用启动：Supabase 自动从 localStorage 恢复 session
   useEffect(() => {
+    let cancelled = false;
+    // 兜底超时：Supabase 不可达（CI 占位 URL / 离线 / 网络抖动）时，
+    // 避免 UI 永远卡在 loading 状态。
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      console.warn("[auth] getSession timeout, falling back to anonymous");
+      setState({ status: "anonymous" });
+    }, 3000);
+
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setState({ status: "authenticated", session, user: session.user });
-        await ensureUser(session.user.id, session.user.email);
-      } else {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (session) {
+          setState({ status: "authenticated", session, user: session.user });
+          try {
+            await ensureUser(session.user.id, session.user.email);
+          } catch {
+            // ensureUser 失败不影响已认证状态
+          }
+        } else {
+          setState({ status: "anonymous" });
+        }
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("[auth] getSession failed, falling back to anonymous", err);
         setState({ status: "anonymous" });
+      } finally {
+        window.clearTimeout(timeoutId);
       }
     })();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
