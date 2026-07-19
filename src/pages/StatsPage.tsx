@@ -1,5 +1,6 @@
 // 数据看板 — 月度收入、出勤率、活跃学生等统计
 
+import { Link } from "react-router-dom";
 import { useMonthlyPayments, useMonthlyAttendance, useStudents, useLowBalanceEnrollments } from "@/lib/queries";
 import { Loader2, TrendingUp, Users, CheckCircle, AlertTriangle, DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,9 +98,9 @@ export default function StatsPage() {
 
       {/* Row 3: Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <QuickLink href="#/payments" label={t("stats.quickLinks.recordPayment")} icon={<DollarSign className="w-4 h-4" />} />
-        <QuickLink href="#/students" label={t("stats.quickLinks.manageStudents")} icon={<Users className="w-4 h-4" />} />
-        <QuickLink href="#/export" label={t("stats.quickLinks.exportData")} icon={<TrendingUp className="w-4 h-4" />} />
+        <QuickLink to="/payments" label={t("stats.quickLinks.recordPayment")} icon={<DollarSign className="w-4 h-4" />} />
+        <QuickLink to="/students" label={t("stats.quickLinks.manageStudents")} icon={<Users className="w-4 h-4" />} />
+        <QuickLink to="/export" label={t("stats.quickLinks.exportData")} icon={<TrendingUp className="w-4 h-4" />} />
       </div>
     </div>
   );
@@ -164,9 +165,9 @@ function DailyChart({ data }: { data: { day: number; label: string; amount: numb
 // Quick Link Card
 // =============================================================================
 
-function QuickLink({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) {
+function QuickLink({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
   return (
-    <a href={href} onClick={e => e.preventDefault()}
+    <Link to={to}
       className="block rounded-lg border border-gray-200 bg-white p-4 hover:border-[#5BB5A2] hover:shadow-sm transition-all group">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-[#E8F4F0] text-[#5BB5A2] flex items-center justify-center group-hover:bg-[#5BB5A2] group-hover:text-white transition-colors">
@@ -174,7 +175,7 @@ function QuickLink({ href, label, icon }: { href: string; label: string; icon: R
         </div>
         <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{label}</span>
       </div>
-    </a>
+    </Link>
   );
 }
 

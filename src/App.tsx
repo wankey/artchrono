@@ -1,30 +1,45 @@
 // App 根组件 — V1 带侧边导航 + 学生详情页
 
-import { useState, useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
+import { BrowserRouter, Navigate, NavLink, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/pages/Login";
-import LoginPage from "@/pages/LoginPage";
 import { supabase } from "@/lib/supabase";
-import HomePage from "@/pages/HomePage";
-import StudentsPage from "@/pages/StudentsPage";
-import StudentDetailPage from "@/pages/StudentDetailPage";
-import CoursesPage from "@/pages/CoursesPage";
-import ExportPage from "@/pages/ExportPage";
-import PaymentsPage from "@/pages/PaymentsPage";
-import StatsPage from "@/pages/StatsPage";
-import OnboardingPage from "@/pages/OnboardingPage";
-import SettingsPage from "@/pages/SettingsPage";
 import { useT } from "@/i18n/useTypedTranslation";
 import { LogoIcon } from "@/components/Logo";
 import { BarChart3, CalendarDays, Users, GraduationCap, CreditCard, Download, LogOut, Settings as SettingsIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
-type Page = "home" | "stats" | "students" | "student_detail" | "courses" | "payments" | "export" | "onboarding" | "settings";
+// React.lazy: 每个页面按需加载；与 React Router 的 <Route> 配合即可按 URL 拆 chunk
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const StatsPage = lazy(() => import("@/pages/StatsPage"));
+const StudentsPage = lazy(() => import("@/pages/StudentsPage"));
+const StudentDetailPage = lazy(() => import("@/pages/StudentDetailPage"));
+const CoursesPage = lazy(() => import("@/pages/CoursesPage"));
+const ExportPage = lazy(() => import("@/pages/ExportPage"));
+const PaymentsPage = lazy(() => import("@/pages/PaymentsPage"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+
+function RouteFallback() {
+  const { t } = useT();
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex min-h-[60vh] items-center justify-center"
+    >
+      <div className="flex items-center gap-3 text-sm text-gray-500">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#5BB5A2]" aria-hidden="true" />
+        <span>{t("common.loading")}</span>
+      </div>
+    </div>
+  );
+}
 
 function Layout() {
-  const [page, setPage] = useState<Page>("home");
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { state, signOut } = useAuth();
   const user = state.status === "authenticated" ? state.user : null;
+  const navigate = useNavigate();
   const { t } = useT();
 
   // 启动时兜底 regeneration
@@ -44,6 +59,8 @@ function Layout() {
     run();
   }, [state.status]);
 
+  const openStudent = (id: string) => navigate(`/students/${encodeURIComponent(id)}`);
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -55,17 +72,23 @@ function Layout() {
           </div>
         </div>
         <nav className="flex-1 py-2">
-          <NavItem icon={<BarChart3 className="w-4 h-4" />} label={t("sidebar.stats")} active={page === "stats"} onClick={() => { setPage("stats"); setSelectedStudentId(null); }} />
-          <NavItem icon={<CalendarDays className="w-4 h-4" />} label={t("sidebar.home")} active={page === "home"} onClick={() => { setPage("home"); setSelectedStudentId(null); }} />
-          <NavItem icon={<Users className="w-4 h-4" />} label={t("sidebar.students")} active={page === "students" || page === "student_detail"} onClick={() => { setPage("students"); setSelectedStudentId(null); }} />
-          <NavItem icon={<GraduationCap className="w-4 h-4" />} label={t("sidebar.courses")} active={page === "courses"} onClick={() => { setPage("courses"); setSelectedStudentId(null); }} />
-          <NavItem icon={<CreditCard className="w-4 h-4" />} label={t("sidebar.payments")} active={page === "payments"} onClick={() => { setPage("payments"); setSelectedStudentId(null); }} />
-          <NavItem icon={<Download className="w-4 h-4" />} label={t("sidebar.export")} active={page === "export"} onClick={() => { setPage("export"); setSelectedStudentId(null); }} />
-          <NavItem icon={<SettingsIcon className="w-4 h-4" />} label={t("sidebar.settings")} active={page === "settings"} onClick={() => { setPage("settings"); setSelectedStudentId(null); }} />
+          <NavItem to="/stats" icon={<BarChart3 className="w-4 h-4" />} label={t("sidebar.stats")} />
+          <NavItem to="/" end icon={<CalendarDays className="w-4 h-4" />} label={t("sidebar.home")} />
+          <NavItem to="/students" icon={<Users className="w-4 h-4" />} label={t("sidebar.students")} />
+          <NavItem to="/courses" icon={<GraduationCap className="w-4 h-4" />} label={t("sidebar.courses")} />
+          <NavItem to="/payments" icon={<CreditCard className="w-4 h-4" />} label={t("sidebar.payments")} />
+          <NavItem to="/export" icon={<Download className="w-4 h-4" />} label={t("sidebar.export")} />
+          <NavItem to="/settings" icon={<SettingsIcon className="w-4 h-4" />} label={t("sidebar.settings")} />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700/30 flex items-center justify-between">
           <span className="text-xs text-gray-400 truncate">{user?.email}</span>
-          <button onClick={() => signOut()} className="text-gray-400 hover:text-white" title={t("sidebar.logout")}>
+          <button
+            type="button"
+            onClick={() => signOut()}
+            className="text-gray-400 hover:text-white"
+            title={t("sidebar.logout")}
+            aria-label={t("sidebar.logout")}
+          >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
@@ -73,37 +96,52 @@ function Layout() {
 
       {/* Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
-        {page === "stats" && <StatsPage />}
-        {page === "home" && <HomePage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />}
-        {page === "students" && (
-          <StudentsPage onSelectStudent={(id) => { setSelectedStudentId(id); setPage("student_detail"); }} />
-        )}
-        {page === "student_detail" && selectedStudentId && (
-          <StudentDetailPage studentId={selectedStudentId} onBack={() => { setPage("students"); setSelectedStudentId(null); }} />
-        )}
-        {page === "courses" && <CoursesPage />}
-        {page === "payments" && <PaymentsPage />}
-        {page === "export" && <ExportPage />}
-        {page === "settings" && <SettingsPage />}
-        {page === "onboarding" && <OnboardingPage onComplete={() => setPage("home")} />}
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<HomePage onSelectStudent={openStudent} />} />
+            <Route path="/stats" element={<StatsPage />} />
+            <Route path="/students" element={<StudentsPage onSelectStudent={openStudent} />} />
+            <Route path="/students/:studentId" element={<StudentDetailRoute />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/export" element={<ExportPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/onboarding" element={<OnboardingPage onComplete={() => navigate("/", { replace: true })} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );
 }
 
-function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+function StudentDetailRoute() {
+  const { studentId } = useParams();
+  const navigate = useNavigate();
+
+  if (!studentId) return <Navigate to="/students" replace />;
+
   return (
-    <Button
-      variant="ghost"
-      onClick={onClick}
-      className={`w-full justify-start gap-3 rounded-none px-4 py-2.5 text-sm font-normal transition-colors ${
-        active ? "text-white" : "text-gray-300 hover:text-white"
+    <StudentDetailPage
+      studentId={studentId}
+      onBack={() => navigate("/students")}
+    />
+  );
+}
+
+function NavItem({ to, icon, label, end = false }: { to: string; icon: React.ReactNode; label: string; end?: boolean }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) => `flex w-full items-center justify-start gap-3 px-4 py-2.5 text-sm font-normal transition-colors ${
+        isActive ? "text-white" : "text-gray-300 hover:text-white"
       }`}
-      style={active ? { backgroundColor: "#2D8A7B" } : {}}
+      style={({ isActive }) => isActive ? { backgroundColor: "#2D8A7B" } : undefined}
     >
       {icon}
       {label}
-    </Button>
+    </NavLink>
   );
 }
 
@@ -116,7 +154,11 @@ function Root() {
   }
 
   if (state.status === "anonymous") {
-    return <LoginPage />;
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <LoginPage />
+      </Suspense>
+    );
   }
 
   return <Layout />;
@@ -124,8 +166,10 @@ function Root() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Root />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <Root />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

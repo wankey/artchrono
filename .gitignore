@@ -23,3 +23,11 @@ supabase/.temp/
 .idea/
 *.swp
 .gstack/
+
+# Multica runtime state + agent working artifacts
+.multica/
+.agent_context/
+description.md
+
+# Local Claude Code overrides (per-user, not project)
+.claude/settings.local.json
